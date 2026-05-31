@@ -1,6 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 
 const course = {
   title: 'Full-Stack Web Development Bootcamp',
@@ -81,10 +83,57 @@ export default function CoursePage() {
     )
   }
 
-  const handleEnroll = () => {
-    setEnrolled(true)
-    alert('Redirecting to payment... (Paystack coming soon!)')
+  const [user, setUser] = useState(null)
+const router = useRouter()
+
+useEffect(() => {
+  const getUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) setUser(session.user)
   }
+  getUser()
+}, [])
+
+const handleEnroll = async () => {
+  if (!user) {
+    router.push('/login')
+    return
+  }
+
+  const PaystackPop = (await import('@paystack/inline-js')).default
+  const handler = PaystackPop.setup({
+    key: process.env.NEXT_PUBLIC_PAYSTACK_KEY,
+    email: user.email,
+    amount: course.price * 100,
+    currency: 'GHS',
+    ref: `elimu_${Date.now()}`,
+    metadata: {
+      course_title: course.title,
+      user_id: user.id,
+    },
+    onSuccess: async (transaction) => {
+  const { error } = await supabase
+    .from('enrollments')
+    .insert({
+      user_id: user.id,
+      course_slug: 'full-stack-web-development',
+      course_title: course.title,
+      course_price: course.price,
+      payment_ref: transaction.reference,
+    })
+
+  if (error) {
+    console.error('Enrollment save error:', error)
+  }
+
+  router.push('/dashboard?enrolled=true')
+},
+    onCancel: () => {
+      console.log('Payment cancelled')
+    },
+  })
+  handler.openIframe()
+}
 
   return (
     <main style={{ background: '#F8F8F6', minHeight: '100vh' }}>
