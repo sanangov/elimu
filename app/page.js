@@ -124,7 +124,7 @@ export default function Home() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
           {courses.map(course => (
-            <Link href="/course" key={course.title} style={{
+            <Link href="/course/full-stack-web-development" key={course.title} style={{
               background: 'white', border: '0.5px solid #e5e5e5',
               borderRadius: 12, overflow: 'hidden', display: 'block'
             }}>
