@@ -1,7 +1,9 @@
+'use client'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-//import styles from './page.module.css'
+import { supabase } from '@/lib/supabase'
 
-const categories = [
+const staticCategories = [
   { icon: '💻', name: 'Technology', count: '1,240' },
   { icon: '📈', name: 'Business', count: '860' },
   { icon: '🎨', name: 'Design', count: '540' },
@@ -12,16 +14,24 @@ const categories = [
   { icon: '🗣️', name: 'Languages', count: '195' },
 ]
 
-const courses = [
-  { icon: '💻', bg: '#E1F5EE', tag: 'Technology', title: 'Full-Stack Web Development Bootcamp', instructor: 'Kwame Mensah', rating: '4.9', price: 'GH₵ 120' },
-  { icon: '📈', bg: '#FAEEDA', tag: 'Business', title: 'Start & Grow Your Business in Africa', instructor: 'Amina Diallo', rating: '4.8', price: 'GH₵ 89' },
-  { icon: '🎨', bg: '#FAECE7', tag: 'Design', title: 'UI/UX Design Masterclass', instructor: 'Fatima Osei', rating: '4.7', price: 'GH₵ 75' },
-  { icon: '🌿', bg: '#EAF3DE', tag: 'Agriculture', title: 'Modern Farming Techniques for Africa', instructor: 'Dr. Olu Adeyemi', rating: '5.0', price: 'Free' },
-  { icon: '📊', bg: '#E6F1FB', tag: 'Finance', title: 'Personal Finance & Investment 101', instructor: 'Nana Ama Boateng', rating: '4.9', price: 'GH₵ 55' },
-  { icon: '🗣️', bg: '#EEEDFE', tag: 'Languages', title: 'Learn French from Scratch — A1 to B2', instructor: 'Marie Coulibaly', rating: '4.6', price: 'GH₵ 65' },
-]
-
 export default function Home() {
+  const [courses, setCourses] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const getCourses = async () => {
+      const { data } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+        .limit(6)
+      setCourses(data || [])
+      setLoading(false)
+    }
+    getCourses()
+  }, [])
+
   return (
     <main>
 
@@ -36,18 +46,12 @@ export default function Home() {
         </span>
         <div style={{ display: 'flex', gap: '1.5rem' }}>
           {['Explore', 'Categories', 'Teach on Elimu', 'About'].map(l => (
-            <Link key={l} href="#" style={{ fontSize: 14, color: '#888', fontWeight: 500 }}>{l}</Link>
+            <Link key={l} href={l === 'Teach on Elimu' ? '/instructor' : '#'} style={{ fontSize: 14, color: '#888', fontWeight: 500, textDecoration: 'none' }}>{l}</Link>
           ))}
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <Link href="/login" style={{
-            padding: '8px 18px', border: '1.5px solid #1D9E75', borderRadius: 8,
-            color: '#0F6E56', fontSize: 14, fontWeight: 500
-          }}>Log in</Link>
-          <Link href="/signup" style={{
-            padding: '8px 18px', background: '#0F6E56', borderRadius: 8,
-            color: 'white', fontSize: 14, fontWeight: 500
-          }}>Sign up free</Link>
+          <Link href="/login" style={{ padding: '8px 18px', border: '1.5px solid #1D9E75', borderRadius: 8, color: '#0F6E56', fontSize: 14, fontWeight: 500 }}>Log in</Link>
+          <Link href="/signup" style={{ padding: '8px 18px', background: '#0F6E56', borderRadius: 8, color: 'white', fontSize: 14, fontWeight: 500 }}>Sign up free</Link>
         </div>
       </nav>
 
@@ -56,36 +60,19 @@ export default function Home() {
         background: 'linear-gradient(135deg, #085041 0%, #1D9E75 60%, #5DCAA5 100%)',
         padding: '5rem 2rem 4rem', textAlign: 'center'
       }}>
-        <div style={{
-          display: 'inline-block', background: 'rgba(255,255,255,0.15)',
-          color: 'white', fontSize: 12, fontWeight: 600, padding: '6px 16px',
-          borderRadius: 20, marginBottom: '1.5rem', letterSpacing: '0.5px', textTransform: 'uppercase'
-        }}>🌍 Africa's Learning Platform</div>
-
-        <h1 style={{
-          fontFamily: 'Playfair Display, serif', fontSize: 52, fontWeight: 900,
-          color: 'white', lineHeight: 1.1, marginBottom: '1.25rem',
-          maxWidth: 600, marginLeft: 'auto', marginRight: 'auto'
-        }}>Learn Anything. Grow Every Day.</h1>
-
+        <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12, fontWeight: 600, padding: '6px 16px', borderRadius: 20, marginBottom: '1.5rem', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+          🌍 Africa's Learning Platform
+        </div>
+        <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 52, fontWeight: 900, color: 'white', lineHeight: 1.1, marginBottom: '1.25rem', maxWidth: 600, marginLeft: 'auto', marginRight: 'auto' }}>
+          Learn Anything. Grow Every Day.
+        </h1>
         <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 480, margin: '0 auto 2.5rem', lineHeight: 1.7 }}>
           Thousands of courses taught by expert instructors. Start learning today and unlock your potential.
         </p>
-
-        <div style={{
-          display: 'flex', maxWidth: 520, margin: '0 auto 2.5rem',
-          background: 'white', borderRadius: 12, overflow: 'hidden',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
-        }}>
-          <input placeholder="What do you want to learn today?" style={{
-            flex: 1, border: 'none', padding: '14px 18px', fontSize: 14, outline: 'none'
-          }} />
-          <button style={{
-            padding: '14px 22px', background: '#0F6E56', border: 'none',
-            color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer'
-          }}>Search</button>
+        <div style={{ display: 'flex', maxWidth: 520, margin: '0 auto 2.5rem', background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}>
+          <input placeholder="What do you want to learn today?" style={{ flex: 1, border: 'none', padding: '14px 18px', fontSize: 14, outline: 'none' }} />
+          <button style={{ padding: '14px 22px', background: '#0F6E56', border: 'none', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Search</button>
         </div>
-
         <div style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem' }}>
           {[['12K+', 'Courses'], ['85K+', 'Students'], ['2K+', 'Instructors'], ['4.8★', 'Avg Rating']].map(([num, label]) => (
             <div key={label} style={{ textAlign: 'center', color: 'white' }}>
@@ -103,11 +90,8 @@ export default function Home() {
           <span style={{ fontSize: 13, color: '#1D9E75', fontWeight: 500, cursor: 'pointer' }}>View all →</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12 }}>
-          {categories.map(cat => (
-            <div key={cat.name} style={{
-              background: 'white', border: '0.5px solid #e5e5e5', borderRadius: 12,
-              padding: '1.25rem 1rem', textAlign: 'center', cursor: 'pointer'
-            }}>
+          {staticCategories.map(cat => (
+            <div key={cat.name} style={{ background: 'white', border: '0.5px solid #e5e5e5', borderRadius: 12, padding: '1.25rem 1rem', textAlign: 'center', cursor: 'pointer' }}>
               <div style={{ fontSize: 28, marginBottom: 10 }}>{cat.icon}</div>
               <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 2 }}>{cat.name}</div>
               <div style={{ fontSize: 11, color: '#888' }}>{cat.count} courses</div>
@@ -116,54 +100,58 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURED COURSES */}
+      {/* FEATURED COURSES — REAL FROM DATABASE */}
       <section style={{ padding: '3.5rem 2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.75rem' }}>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700 }}>Featured Courses</h2>
           <span style={{ fontSize: 13, color: '#1D9E75', fontWeight: 500, cursor: 'pointer' }}>See all →</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
-          {courses.map(course => (
-            <Link href="/course/full-stack-web-development" key={course.title} style={{
-              background: 'white', border: '0.5px solid #e5e5e5',
-              borderRadius: 12, overflow: 'hidden', display: 'block'
-            }}>
-              <div style={{ height: 120, background: course.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>
-                {course.icon}
-              </div>
-              <div style={{ padding: 14 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#0F6E56', marginBottom: 6 }}>{course.tag}</div>
-                <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.4, marginBottom: 8 }}>{course.title}</div>
-                <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>by {course.instructor}</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: '#BA7517' }}>★ {course.rating}</span>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: '#0F6E56' }}>{course.price}</span>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '3rem', color: '#888', fontSize: 14 }}>Loading courses...</div>
+        ) : courses.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: 12, border: '0.5px solid #e5e5e5' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🎓</div>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>No courses yet</div>
+            <p style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>Be the first instructor to publish a course on Elimu!</p>
+            <Link href="/instructor/new-course" style={{ display: 'inline-block', padding: '10px 24px', background: '#0F6E56', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>Create a course →</Link>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+            {courses.map(course => (
+              <Link href={`/course/${course.slug}`} key={course.id} style={{ background: 'white', border: '0.5px solid #e5e5e5', borderRadius: 12, overflow: 'hidden', display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ height: 120, background: course.bg_color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>
+                  {course.icon}
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+                <div style={{ padding: 14 }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#0F6E56', marginBottom: 6 }}>{course.category}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.4, marginBottom: 8 }}>{course.title}</div>
+                  <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{course.subtitle}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, color: '#BA7517' }}>★ New</span>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: '#0F6E56' }}>
+                      {course.price === 0 ? 'Free' : `GH₵ ${course.price}`}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* INSTRUCTOR BANNER */}
       <section style={{ padding: '0 2rem 3rem' }}>
-        <div style={{
-          background: 'linear-gradient(135deg, #085041, #0F6E56)',
-          borderRadius: 16, padding: '2.5rem',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-        }}>
+        <div style={{ background: 'linear-gradient(135deg, #085041, #0F6E56)', borderRadius: 16, padding: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: 'white', marginBottom: 8 }}>
-              Share your knowledge. Earn income.
-            </h2>
+            <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: 'white', marginBottom: 8 }}>Share your knowledge. Earn income.</h2>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', maxWidth: 340, lineHeight: 1.6 }}>
               Join thousands of instructors on Elimu. Create a course, reach students across Africa, and earn every time someone enrolls.
             </p>
           </div>
-          <Link href="/signup" style={{
-            padding: '12px 24px', background: 'white', borderRadius: 10,
-            color: '#0F6E56', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap'
-          }}>Become an Instructor →</Link>
+          <Link href="/instructor" style={{ padding: '12px 24px', background: 'white', borderRadius: 10, color: '#0F6E56', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', textDecoration: 'none' }}>
+            Become an Instructor →
+          </Link>
         </div>
       </section>
 
@@ -172,9 +160,7 @@ export default function Home() {
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
           <div>
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 900, marginBottom: 10 }}>Elimu</div>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, maxWidth: 220 }}>
-              Africa's premier online learning platform. Knowledge for everyone, everywhere.
-            </p>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, maxWidth: 220 }}>Africa's premier online learning platform. Knowledge for everyone, everywhere.</p>
           </div>
           {[
             ['Learn', ['All Courses', 'Free Courses', 'Certificates', 'Learning Paths']],
@@ -184,7 +170,7 @@ export default function Home() {
             <div key={title}>
               <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{title}</h4>
               {links.map(l => (
-                <Link key={l} href="#" style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 7 }}>{l}</Link>
+                <Link key={l} href="#" style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 7, textDecoration: 'none' }}>{l}</Link>
               ))}
             </div>
           ))}
