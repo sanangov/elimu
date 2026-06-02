@@ -163,7 +163,7 @@ useEffect(() => {
               <div style={{ height: 5, background: '#1D9E75', borderRadius: 3, width: '0%' }} />
             </div>
             <div style={{ fontSize: 11, color: '#888', marginBottom: 12 }}>0% complete</div>
-            <Link href={`/course/${enrollment.course_slug}`} style={{
+            <Link href={`/learn/${enrollment.course_slug}`} style={{
               display: 'block', padding: '9px', background: '#0F6E56', color: 'white',
               borderRadius: 8, fontSize: 13, fontWeight: 500, textAlign: 'center'
             }}>Continue learning →</Link>
