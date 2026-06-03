@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 const course = {
@@ -76,6 +76,9 @@ export default function CoursePage() {
   const [openSections, setOpenSections] = useState([0])
   const [activeTab, setActiveTab] = useState('reviews')
   const [enrolled, setEnrolled] = useState(false)
+  const [dbReviews, setDbReviews] = useState([])
+  const [avgRating, setAvgRating] = useState(0)
+  const params = useParams()
 
   const toggleSection = (i) => {
     setOpenSections(prev =>
@@ -94,6 +97,23 @@ useEffect(() => {
   getUser()
 }, [])
 
+useEffect(() => {
+  const getReviews = async () => {
+    const { data } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('course_slug', params.slug)
+      .order('created_at', { ascending: false })
+
+    if (data && data.length > 0) {
+      setDbReviews(data)
+      const avg = data.reduce((acc, r) => acc + r.rating, 0) / data.length
+      setAvgRating(Math.round(avg * 10) / 10)
+    }
+  }
+  getReviews()
+}, [params.slug])
+
 const handleEnroll = async () => {
   if (!user) {
     router.push('/login')
@@ -111,34 +131,23 @@ const handleEnroll = async () => {
       course_title: course.title,
       user_id: user.id,
     },
-  onSuccess: async (transaction) => {
-  const { error } = await supabase
-    .from('enrollments')
-    .insert({
-      user_id: user.id,
-      course_slug: course.slug,
-      course_title: course.title,
-      course_price: course.price,
-      payment_ref: transaction.reference,
-    })
+      onSuccess: async (transaction) => {
+    const { error } = await supabase
+      .from('enrollments')
+      .insert({
+        user_id: user.id,
+        course_slug: 'full-stack-web-development',
+        course_title: course.title,
+        course_price: course.price,
+        payment_ref: transaction.reference,
+      })
 
-  if (error) {
-    console.error('Enrollment save error:', error)
-  }
+    if (error) {
+      console.error('Enrollment save error:', error)
+    }
 
-  await fetch('/api/send-enrollment-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: user.email,
-      firstName: user.user_metadata?.first_name || 'Student',
-      courseTitle: course.title,
-      coursePrice: course.price,
-    })
-  })
-
-  router.push('/dashboard?enrolled=true')
-},
+    router.push('/dashboard?enrolled=true')
+  },
     onCancel: () => {
       console.log('Payment cancelled')
     },
@@ -308,7 +317,9 @@ const handleEnroll = async () => {
               <div>
                 <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                   <div style={{ textAlign: 'center', flexShrink: 0 }}>
-                    <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 52, fontWeight: 700, color: '#BA7517', lineHeight: 1 }}>4.9</div>
+                    <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 52, fontWeight: 700, color: '#BA7517', lineHeight: 1 }}>
+                      {dbReviews.length > 0 ? avgRating : course.rating}
+                    </div>
                     <div style={{ color: '#EF9F27', fontSize: 18 }}>★★★★★</div>
                     <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>Course rating</div>
                   </div>
@@ -324,22 +335,32 @@ const handleEnroll = async () => {
                     ))}
                   </div>
                 </div>
-                {course.reviews.map((rev, i) => (
-                  <div key={i} style={{ padding: '14px 0', borderBottom: i < course.reviews.length - 1 ? '0.5px solid #e5e5e5' : 'none' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: rev.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: rev.color }}>
-                        {rev.initials}
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 500 }}>{rev.name}</div>
-                        <div style={{ fontSize: 11, color: '#888' }}>{rev.location}</div>
-                      </div>
-                      <div style={{ marginLeft: 'auto', color: '#EF9F27', fontSize: 12 }}>{'★'.repeat(rev.rating)}</div>
-                    </div>
-                    <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>{rev.text}</div>
-                    <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>{rev.date}</div>
+
+                {dbReviews.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: '#888', fontSize: 14 }}>
+                    No reviews yet. Be the first to review this course!
                   </div>
-                ))}
+                ) : (
+                  dbReviews.map((rev, i) => (
+                    <div key={rev.id} style={{ padding: '14px 0', borderBottom: i < dbReviews.length - 1 ? '0.5px solid #e5e5e5' : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                        <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#E1F5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#0F6E56' }}>
+                          {rev.reviewer_name?.[0]?.toUpperCase() || '?'}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 500 }}>{rev.reviewer_name || 'Student'}</div>
+                        </div>
+                        <div style={{ marginLeft: 'auto', color: '#EF9F27', fontSize: 12 }}>
+                          {'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>{rev.comment}</div>
+                      <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
+                        {new Date(rev.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
 

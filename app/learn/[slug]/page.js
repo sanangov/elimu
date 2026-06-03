@@ -151,6 +151,18 @@ export default function LearnPage() {
         {/* VIDEO AREA */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
+          {/* REVIEW SECTION — shows when all lessons completed */}
+{progress === 100 && (
+  <div style={{ padding: '1.5rem', background: '#1A1A1A', borderTop: '0.5px solid #333' }}>
+    <ReviewForm
+      courseSlug={slug}
+      courseId={course?.id}
+      userId={user?.id}
+      firstName={user?.user_metadata?.first_name || 'Student'}
+      onReviewSubmitted={(review) => console.log('Review submitted:', review)}
+    />
+  </div>
+)}
           {activeLesson ? (
             <>
               {/* VIDEO PLAYER */}
