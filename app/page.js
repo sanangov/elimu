@@ -69,10 +69,26 @@ export default function Home() {
         <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 480, margin: '0 auto 2.5rem', lineHeight: 1.7 }}>
           Thousands of courses taught by expert instructors. Start learning today and unlock your potential.
         </p>
-        <div style={{ display: 'flex', maxWidth: 520, margin: '0 auto 2.5rem', background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}>
-          <input placeholder="What do you want to learn today?" style={{ flex: 1, border: 'none', padding: '14px 18px', fontSize: 14, outline: 'none' }} />
-          <button style={{ padding: '14px 22px', background: '#0F6E56', border: 'none', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Search</button>
-        </div>
+          
+     <form
+  onSubmit={(e) => {
+    e.preventDefault()
+    const val = e.target.search.value
+    if (val) window.location.href = `/search?q=${encodeURIComponent(val)}`
+    else window.location.href = '/search'
+  }}
+  style={{ display: 'flex', maxWidth: 520, margin: '0 auto 2.5rem', background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}
+>
+  <input
+    name="search"
+    placeholder="What do you want to learn today?"
+    style={{ flex: 1, border: 'none', padding: '14px 18px', fontSize: 14, outline: 'none' }}
+  />
+  <button type="submit" style={{ padding: '14px 22px', background: '#0F6E56', border: 'none', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+    Search
+  </button>
+</form>
+        
         <div style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem' }}>
           {[['12K+', 'Courses'], ['85K+', 'Students'], ['2K+', 'Instructors'], ['4.8★', 'Avg Rating']].map(([num, label]) => (
             <div key={label} style={{ textAlign: 'center', color: 'white' }}>
