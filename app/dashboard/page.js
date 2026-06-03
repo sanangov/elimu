@@ -41,6 +41,11 @@ useEffect(() => {
   const lastName = user?.user_metadata?.last_name || ''
   const initials = `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase()
 
+  const searchParams = typeof window !== 'undefined'
+  ? new URLSearchParams(window.location.search)
+  : null
+const justEnrolled = searchParams?.get('enrolled') === 'true'
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8F8F6' }}>
@@ -115,6 +120,15 @@ useEffect(() => {
             borderRadius: 8, fontSize: 13, fontWeight: 500
           }}>Browse courses</Link>
         </div>
+        {justEnrolled && (
+  <div style={{ background: '#E1F5EE', border: '0.5px solid #9FE1CB', borderRadius: 10, padding: '12px 16px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: 10 }}>
+    <span style={{ fontSize: 20 }}>🎉</span>
+    <div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: '#085041' }}>Enrollment successful!</div>
+      <div style={{ fontSize: 13, color: '#0F6E56' }}>Check your email for confirmation. Start learning below!</div>
+    </div>
+  </div>
+)}
 
         {/* STATS */}
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: '1.5rem' }}>

@@ -111,12 +111,12 @@ const handleEnroll = async () => {
       course_title: course.title,
       user_id: user.id,
     },
-    onSuccess: async (transaction) => {
+  onSuccess: async (transaction) => {
   const { error } = await supabase
     .from('enrollments')
     .insert({
       user_id: user.id,
-      course_slug: 'full-stack-web-development',
+      course_slug: course.slug,
       course_title: course.title,
       course_price: course.price,
       payment_ref: transaction.reference,
@@ -125,6 +125,17 @@ const handleEnroll = async () => {
   if (error) {
     console.error('Enrollment save error:', error)
   }
+
+  await fetch('/api/send-enrollment-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: user.email,
+      firstName: user.user_metadata?.first_name || 'Student',
+      courseTitle: course.title,
+      coursePrice: course.price,
+    })
+  })
 
   router.push('/dashboard?enrolled=true')
 },
