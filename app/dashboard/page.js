@@ -61,7 +61,7 @@ const justEnrolled = searchParams?.get('enrolled') === 'true'
     <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F8F6' }}>
 
       {/* SIDEBAR */}
-      <aside style={{ width: 200, background: 'white', borderRight: '0.5px solid #e5e5e5', padding: '1.25rem 0', display: 'flex', flexDirection: 'column' }}>
+      <aside className="mobile-hide" style={{ width: 200, background: 'white', borderRight: '0.5px solid #e5e5e5', padding: '1.25rem 0', display: 'flex', flexDirection: 'column' }}>
         <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, fontWeight: 900, color: '#0F6E56', padding: '0 1.25rem 1.5rem' }}>
           Elim<span style={{ color: '#1D9E75' }}>u</span>
         </div>
@@ -131,7 +131,7 @@ const justEnrolled = searchParams?.get('enrolled') === 'true'
 )}
 
         {/* STATS */}
-<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: '1.5rem' }}>
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: '1.5rem' }}>
   {[
     ['Courses enrolled', enrollments.length, enrollments.length > 0 ? 'Keep learning!' : 'Start today'],
     ['Hours learned', `${enrollments.length * 2}h`, 'Keep going!'],

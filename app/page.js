@@ -35,36 +35,42 @@ export default function Home() {
 
   return (
     <main>
-
       {/* NAVBAR */}
       <nav style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '1rem 2rem', background: 'white',
-        borderBottom: '0.5px solid #e5e5e5', position: 'sticky', top: 0, zIndex: 10
-      }}>
-        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 900, color: '#0F6E56' }}>
-          Elim<span style={{ color: '#1D9E75' }}>u</span>
-        </span>
-        <div style={{ display: 'flex', gap: '1.5rem' }}>
-          {['Explore', 'Categories', 'Teach on Elimu', 'About'].map(l => (
-            <Link key={l} href={l === 'Teach on Elimu' ? '/instructor' : '#'} style={{ fontSize: 14, color: '#888', fontWeight: 500, textDecoration: 'none' }}>{l}</Link>
-          ))}
-        </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <Link href="/login" style={{ padding: '8px 18px', border: '1.5px solid #1D9E75', borderRadius: 8, color: '#0F6E56', fontSize: 14, fontWeight: 500 }}>Log in</Link>
-          <Link href="/signup" style={{ padding: '8px 18px', background: '#0F6E56', borderRadius: 8, color: 'white', fontSize: 14, fontWeight: 500 }}>Sign up free</Link>
-        </div>
-      </nav>
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '0.75rem 1.25rem', background: 'white',
+      borderBottom: '0.5px solid #e5e5e5', position: 'sticky', top: 0, zIndex: 10,
+      width: '100%', overflow: 'hidden'
+    }}>
+  <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 900, color: '#0F6E56' }}>
+    Elim<span style={{ color: '#1D9E75' }}>u</span>
+  </span>
+  <div className="nav-links" style={{ display: 'flex', gap: '1.5rem' }}>
+    {['Explore', 'Categories', 'Teach on Elimu', 'About'].map(l => (
+      <Link key={l} href={l === 'Teach on Elimu' ? '/instructor' : l === 'Explore' ? '/search' : '#'} style={{ fontSize: 14, color: '#888', fontWeight: 500, textDecoration: 'none' }}>{l}</Link>
+    ))}
+  </div>
+  <div style={{ display: 'flex', gap: 8 }}>
+    <Link href="/login" style={{ padding: '7px 14px', border: '1.5px solid #1D9E75', borderRadius: 8, color: '#0F6E56', fontSize: 13, fontWeight: 500 }}>Log in</Link>
+    <Link href="/signup" style={{ padding: '7px 14px', background: '#0F6E56', borderRadius: 8, color: 'white', fontSize: 13, fontWeight: 500 }}>Sign up</Link>
+  </div>
+</nav>
 
       {/* HERO */}
       <section style={{
         background: 'linear-gradient(135deg, #085041 0%, #1D9E75 60%, #5DCAA5 100%)',
-        padding: '5rem 2rem 4rem', textAlign: 'center'
+        padding: '4rem 1.25rem 3rem', textAlign: 'center', width: '100%'
       }}>
         <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12, fontWeight: 600, padding: '6px 16px', borderRadius: 20, marginBottom: '1.5rem', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
           🌍 Africa's Learning Platform
         </div>
-        <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 52, fontWeight: 900, color: 'white', lineHeight: 1.1, marginBottom: '1.25rem', maxWidth: 600, marginLeft: 'auto', marginRight: 'auto' }}>
+        <h1 className="hero-title" style={{ 
+            fontFamily: 'Playfair Display, serif', 
+            fontSize: 'clamp(32px, 8vw, 52px)', 
+            fontWeight: 900, color: 'white', lineHeight: 1.1, 
+            marginBottom: '1.25rem', maxWidth: 600, 
+            marginLeft: 'auto', marginRight: 'auto' 
+          }}>
           Learn Anything. Grow Every Day.
         </h1>
         <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 480, margin: '0 auto 2.5rem', lineHeight: 1.7 }}>
@@ -72,25 +78,23 @@ export default function Home() {
         </p>
           
      <form
-  onSubmit={(e) => {
-    e.preventDefault()
-    const val = e.target.search.value
-    if (val) window.location.href = `/search?q=${encodeURIComponent(val)}`
-    else window.location.href = '/search'
-  }}
-  style={{ display: 'flex', maxWidth: 520, margin: '0 auto 2.5rem', background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}
->
-  <input
-    name="search"
-    placeholder="What do you want to learn today?"
-    style={{ flex: 1, border: 'none', padding: '14px 18px', fontSize: 14, outline: 'none' }}
-  />
-  <button type="submit" style={{ padding: '14px 22px', background: '#0F6E56', border: 'none', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-    Search
-  </button>
-</form>
-        
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem' }}>
+        onSubmit={(e) => {
+          e.preventDefault()
+          const val = e.target.search.value
+          if (val) window.location.href = `/search?q=${encodeURIComponent(val)}`
+          else window.location.href = '/search'
+        }}
+        style={{ display: 'flex', width: '100%', maxWidth: 520, margin: '0 auto 2.5rem', background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}>
+        <input
+          name="search"
+          placeholder="What do you want to learn today?"
+          style={{ flex: 1, border: 'none', padding: '14px 18px', fontSize: 14, outline: 'none' }}
+        />
+        <button type="submit" style={{ padding: '14px 22px', background: '#0F6E56', border: 'none', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+          Search
+        </button>
+      </form>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
           {[['12K+', 'Courses'], ['85K+', 'Students'], ['2K+', 'Instructors'], ['4.8★', 'Avg Rating']].map(([num, label]) => (
             <div key={label} style={{ textAlign: 'center', color: 'white' }}>
               <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 28, fontWeight: 700 }}>{num}</div>
@@ -101,7 +105,7 @@ export default function Home() {
       </section>
 
       {/* CATEGORIES */}
-      <section style={{ padding: '3.5rem 2rem', background: 'white' }}>
+      <section style={{ padding: 'clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem)', background: 'white' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.75rem' }}>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700 }}>Browse Categories</h2>
           <span style={{ fontSize: 13, color: '#1D9E75', fontWeight: 500, cursor: 'pointer' }}>View all →</span>
@@ -118,7 +122,7 @@ export default function Home() {
       </section>
 
       {/* FEATURED COURSES — REAL FROM DATABASE */}
-      <section style={{ padding: '3.5rem 2rem' }}>
+      <section style={{ padding: 'clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.75rem' }}>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700 }}>Featured Courses</h2>
           <span style={{ fontSize: 13, color: '#1D9E75', fontWeight: 500, cursor: 'pointer' }}>See all →</span>
@@ -158,10 +162,15 @@ export default function Home() {
       </section>
 
       {/* INSTRUCTOR BANNER */}
-      <section style={{ padding: '0 2rem 3rem' }}>
-        <div style={{ background: 'linear-gradient(135deg, #085041, #0F6E56)', borderRadius: 16, padding: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <section style={{ padding: '0 1.25rem 2rem' }}>
+        <div style={{
+            background: 'linear-gradient(135deg, #085041, #0F6E56)',
+            borderRadius: 16, padding: '2rem',
+            display: 'flex', justifyContent: 'space-between',
+            alignItems: 'center', flexWrap: 'wrap', gap: '1rem'
+          }}>
           <div>
-            <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: 'white', marginBottom: 8 }}>Share your knowledge. Earn income.</h2>
+            <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, color: 'white', marginBottom: 8 }}>Share your knowledge. Earn income.</h2>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', maxWidth: 340, lineHeight: 1.6 }}>
               Join thousands of instructors on Elimu. Create a course, reach students across Africa, and earn every time someone enrolls.
             </p>
@@ -173,8 +182,8 @@ export default function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ background: '#085041', color: 'white', padding: '2.5rem 2rem 1.5rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+      <footer style={{ background: '#085041', color: 'white', padding: '2.5rem 1.25rem 1.5rem', width: '100%', overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
           <div>
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 900, marginBottom: 10 }}>Elimu</div>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, maxWidth: 220 }}>Africa's premier online learning platform. Knowledge for everyone, everywhere.</p>
@@ -192,7 +201,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.15)', paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.15)', paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>© 2026 Elimu. All rights reserved.</p>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>Privacy Policy · Terms of Service</p>
         </div>

@@ -33,8 +33,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '100vh' }}>
-
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', minHeight: '100vh' }}>
       {/* LEFT PANEL */}
       <div style={{
         background: 'linear-gradient(160deg, #085041 0%, #1D9E75 100%)',

@@ -85,7 +85,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '100vh' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', minHeight: '100vh' }}>
 
       {/* LEFT PANEL */}
       <div style={{
