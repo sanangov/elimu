@@ -79,3 +79,16 @@ img {
     grid-template-columns: 1fr !important;
   }
 }
+
+@media (min-width: 769px) {
+  #learn-main {
+    flex-direction: row !important;
+  }
+
+  #learn-main > div:first-child {
+    width: 280px !important;
+    max-height: 100% !important;
+    border-right: 0.5px solid #333 !important;
+    border-bottom: none !important;
+  }
+}
