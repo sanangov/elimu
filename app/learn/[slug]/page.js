@@ -38,7 +38,11 @@ export default function LearnPage() {
       const { data: enrollment } = await supabase
         .from('enrollments').select('*')
         .eq('user_id', session.user.id).eq('course_slug', slug).single()
-      if (!enrollment) { router.push(`/course/${slug}`); return }
+      if (!enrollment) {
+        console.log('No enrollment found for slug:', slug)
+        router.push(`/course/${slug}`)
+        return
+      }
 
       const { data: sectionsData } = await supabase
         .from('course_sections').select('*, course_lessons(*)')

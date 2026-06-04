@@ -136,7 +136,7 @@ const handleEnroll = async () => {
       .from('enrollments')
       .insert({
         user_id: user.id,
-        course_slug: 'full-stack-web-development',
+        course_slug: course.slug,
         course_title: course.title,
         course_price: course.price,
         payment_ref: transaction.reference,
