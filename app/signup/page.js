@@ -45,17 +45,40 @@ export default function SignupPage() {
       return
     }
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          first_name: firstName,
-          last_name: lastName,
-          role: role,
-        }
+    const handleSignup = async () => {
+  setError('')
+  setLoading(true)
+
+  if (!firstName || !lastName || !email || !password) {
+    setError('Please fill in all fields.')
+    setLoading(false)
+    return
+  }
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        role: role,
       }
-    })
+    }
+  })
+
+  if (error) {
+    setError(error.message)
+    setLoading(false)
+  } else {
+    if (role === 'instructor') {
+      router.push('/instructor/apply')
+    } else {
+      setSuccess(true)
+      setLoading(false)
+    }
+  }
+}
 
     if (error) {
       setError(error.message)

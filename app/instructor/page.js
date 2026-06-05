@@ -15,6 +15,27 @@ export default function InstructorDashboard() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
       setUser(session.user)
+       // ← ADD THIS BLOCK HERE
+       const { data: profile } = await supabase
+        .from('instructor_profiles')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single()
+
+      if (!profile) {
+        router.push('/instructor/apply')
+        return
+      }
+
+      if (profile.status === 'pending') {
+        router.push('/instructor/apply')
+        return
+      }
+
+      if (profile.status === 'rejected') {
+        router.push('/instructor/apply')
+        return
+      }
 
       const { data } = await supabase
         .from('courses')

@@ -175,7 +175,7 @@ export default function Home() {
               Join thousands of instructors on Elimu. Create a course, reach students across Africa, and earn every time someone enrolls.
             </p>
           </div>
-          <Link href="/instructor" style={{ padding: '12px 24px', background: 'white', borderRadius: 10, color: '#0F6E56', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', textDecoration: 'none' }}>
+          <Link href="/instructor/apply" style={{ padding: '12px 24px', background: 'white', borderRadius: 10, color: '#0F6E56', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', textDecoration: 'none' }}>
             Become an Instructor →
           </Link>
         </div>

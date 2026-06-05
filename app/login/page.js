@@ -12,6 +12,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // ← ADDED HERE
+  const searchParams = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search)
+    : null
+  const linkExpired = searchParams?.get('error') === 'link_expired'
+
   const handleLogin = async () => {
     setError('')
     setLoading(true)
@@ -80,6 +86,13 @@ export default function LoginPage() {
           <p style={{ fontSize: 13, color: '#888', marginBottom: '1.5rem', lineHeight: 1.6 }}>
             Log in to continue your learning journey.
           </p>
+
+          {/* ← LINK EXPIRED BANNER ADDED HERE */}
+          {linkExpired && (
+            <div style={{ background: '#FAEEDA', border: '0.5px solid #F0C484', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#633806', marginBottom: '1rem' }}>
+              Your email confirmation link has expired. Please log in directly below.
+            </div>
+          )}
 
           {error && (
             <div style={{ background: '#FCEBEB', border: '0.5px solid #F09595', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#A32D2D', marginBottom: '1rem' }}>
