@@ -16,7 +16,6 @@ export default function AdminInstructors() {
 
   useEffect(() => {
     const init = async () => {
-      const init = async () => {
     await new Promise(resolve => setTimeout(resolve, 500))
     const ok = await requireAdmin(router)
     if (!ok) return
