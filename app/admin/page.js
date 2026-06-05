@@ -16,8 +16,9 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const init = async () => {
-      const ok = await requireAdmin(router)
-      if (!ok) return
+    await new Promise(resolve => setTimeout(resolve, 500))
+    const ok = await requireAdmin(router)
+    if (!ok) return
 
       const [
         { count: pending },
