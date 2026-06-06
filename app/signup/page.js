@@ -14,7 +14,6 @@ export default function SignupPage() {
   const [lastName, setLastName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
 
   const getStrength = (val) => {
     let score = 0
@@ -45,62 +44,29 @@ export default function SignupPage() {
       return
     }
 
-    const handleSignup = async () => {
-  setError('')
-  setLoading(true)
-
-  if (!firstName || !lastName || !email || !password) {
-    setError('Please fill in all fields.')
-    setLoading(false)
-    return
-  }
-
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        first_name: firstName,
-        last_name: lastName,
-        role: role,
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          role: role,
+        }
       }
-    }
-  })
-
-  } else {
-  if (role === 'instructor') {
-    router.push('/instructor/apply')
-  } else {
-    router.push('/dashboard')
-  }
-  setLoading(false)
-}
+    })
 
     if (error) {
       setError(error.message)
       setLoading(false)
     } else {
-      setSuccess(true)
+      if (role === 'instructor') {
+        router.push('/instructor/apply')
+      } else {
+        router.push('/dashboard')
+      }
       setLoading(false)
     }
-  }
-
-  if (success) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8F8F6' }}>
-        <div style={{ background: 'white', borderRadius: 16, padding: '3rem', textAlign: 'center', maxWidth: 400 }}>
-          <div style={{ fontSize: 48, marginBottom: '1rem' }}>📧</div>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, marginBottom: '0.75rem' }}>Check your email!</h2>
-          <p style={{ fontSize: 14, color: '#888', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-            We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.
-          </p>
-          <Link href="/login" style={{
-            display: 'block', padding: '12px', background: '#0F6E56',
-            color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textAlign: 'center'
-          }}>Go to Login</Link>
-        </div>
-      </div>
-    )
   }
 
   return (
