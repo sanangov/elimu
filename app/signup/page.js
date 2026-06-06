@@ -67,17 +67,13 @@ export default function SignupPage() {
     }
   })
 
-  if (error) {
-    setError(error.message)
-    setLoading(false)
   } else {
-    if (role === 'instructor') {
-      router.push('/instructor/apply')
-    } else {
-      setSuccess(true)
-      setLoading(false)
-    }
+  if (role === 'instructor') {
+    router.push('/instructor/apply')
+  } else {
+    router.push('/dashboard')
   }
+  setLoading(false)
 }
 
     if (error) {
