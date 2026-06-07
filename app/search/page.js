@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Suspense } from 'react'
 
-const categories = ['All', 'Technology', 'Business', 'Design', 'Finance', 'Agriculture', 'Arts & Music', 'Health', 'Languages']
+const categories = ['All', 'UCC', 'UG', 'KNUST', 'GIMPA', 'SHS', 'Technology', 'Business', 'Design', 'Finance', 'Agriculture', 'Health', 'Languages', 'General']
 
 function SearchResults() {
   const searchParams = useSearchParams()
@@ -29,9 +29,18 @@ function SearchResults() {
         queryBuilder = queryBuilder.or(`title.ilike.%${query}%,subtitle.ilike.%${query}%,description.ilike.%${query}%`)
       }
 
-      if (category && category !== 'All') {
-        queryBuilder = queryBuilder.eq('category', category)
+    if (category && category !== 'All') {
+      const uniShortNames = ['UCC', 'UG', 'KNUST', 'GIMPA']
+      if (uniShortNames.includes(category)) {
+        queryBuilder = queryBuilder.ilike('category', `%${category}%`)
+      } else if (category === 'SHS') {
+        queryBuilder = queryBuilder.eq('institution_type', 'shs')
+      } else if (category === 'General') {
+        queryBuilder = queryBuilder.eq('institution_type', 'general')
+      } else {
+        queryBuilder = queryBuilder.ilike('category', `%${category}%`)
       }
+    }
 
       const { data } = await queryBuilder.order('created_at', { ascending: false })
       setCourses(data || [])

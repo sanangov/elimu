@@ -16,8 +16,17 @@ const staticCategories = [
 ]
 
 export default function Home() {
-  const [courses, setCourses] = useState([])
-  const [loading, setLoading] = useState(true)
+ const [courses, setCourses] = useState([])
+const [loading, setLoading] = useState(true)
+const [activeFilter, setActiveFilter] = useState('All')
+
+const filteredCourses = activeFilter === 'All'
+  ? courses
+  : activeFilter === 'SHS'
+    ? courses.filter(c => c.institution_type === 'shs')
+    : activeFilter === 'General'
+      ? courses.filter(c => c.institution_type === 'general')
+      : courses.filter(c => c.category?.includes(activeFilter))
 
   useEffect(() => {
     const getCourses = async () => {
@@ -122,44 +131,70 @@ export default function Home() {
       </section>
 
       {/* FEATURED COURSES — REAL FROM DATABASE */}
-      <section style={{ padding: 'clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700 }}>Featured Courses</h2>
-          <span style={{ fontSize: 13, color: '#1D9E75', fontWeight: 500, cursor: 'pointer' }}>See all →</span>
-        </div>
+<section style={{ padding: '3.5rem 2rem' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>
+    <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700 }}>Featured Courses</h2>
+    <span style={{ fontSize: 13, color: '#1D9E75', fontWeight: 500, cursor: 'pointer' }} onClick={() => window.location.href = '/search'}>See all →</span>
+  </div>
 
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: '#888', fontSize: 14 }}>Loading courses...</div>
-        ) : courses.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: 12, border: '0.5px solid #e5e5e5' }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🎓</div>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>No courses yet</div>
-            <p style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>Be the first instructor to publish a course on Elimu!</p>
-            <Link href="/instructor/new-course" style={{ display: 'inline-block', padding: '10px 24px', background: '#0F6E56', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>Create a course →</Link>
+  {/* FILTER TABS */}
+  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+    {['All', 'UCC', 'UG', 'KNUST', 'GIMPA', 'SHS', 'General'].map(filter => (
+      <button
+        key={filter}
+        onClick={() => setActiveFilter(filter)}
+        style={{
+          padding: '7px 16px', borderRadius: 20, fontSize: 13, fontWeight: 500,
+          cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', border: 'none',
+          background: activeFilter === filter ? '#0F6E56' : 'white',
+          color: activeFilter === filter ? 'white' : '#555',
+          border: `0.5px solid ${activeFilter === filter ? '#0F6E56' : '#e5e5e5'}`,
+        }}
+      >{filter}</button>
+    ))}
+  </div>
+
+  {loading ? (
+    <div style={{ textAlign: 'center', padding: '3rem', color: '#888', fontSize: 14 }}>Loading courses...</div>
+  ) : filteredCourses.length === 0 ? (
+    <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: 12, border: '0.5px solid #e5e5e5' }}>
+      <div style={{ fontSize: 40, marginBottom: 12 }}>🎓</div>
+      <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>No courses yet</div>
+      <p style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>Be the first instructor to publish a course on Elimu!</p>
+      <Link href="/instructor/apply" style={{ display: 'inline-block', padding: '10px 24px', background: '#0F6E56', color: 'white', borderRadius: 8, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>Create a course →</Link>
+    </div>
+  ) : (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+      {filteredCourses.map(course => (
+        <Link href={`/course/${course.slug}`} key={course.id} style={{ background: 'white', border: '0.5px solid #e5e5e5', borderRadius: 12, overflow: 'hidden', display: 'block', textDecoration: 'none', color: 'inherit' }}>
+          <div style={{ height: 120, background: course.bg_color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, position: 'relative' }}>
+            {course.icon}
+            {course.institution_type === 'university' && (
+              <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4 }}>
+                {course.category?.split('—')[0]?.trim() || 'University'}
+              </div>
+            )}
+            {course.institution_type === 'shs' && (
+              <div style={{ position: 'absolute', top: 8, left: 8, background: '#085041', color: 'white', fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4 }}>SHS</div>
+            )}
           </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
-            {courses.map(course => (
-              <Link href={`/course/${course.slug}`} key={course.id} style={{ background: 'white', border: '0.5px solid #e5e5e5', borderRadius: 12, overflow: 'hidden', display: 'block', textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ height: 120, background: course.bg_color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>
-                  {course.icon}
-                </div>
-                <div style={{ padding: 14 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#0F6E56', marginBottom: 6 }}>{course.category}</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.4, marginBottom: 8 }}>{course.title}</div>
-                  <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{course.subtitle}</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 11, color: '#BA7517' }}>★ New</span>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: '#0F6E56' }}>
-                      {course.price === 0 ? 'Free' : `GH₵ ${course.price}`}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
+          <div style={{ padding: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#0F6E56', marginBottom: 4 }}>{course.category}</div>
+            {course.course_level && <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>{course.course_level} {course.course_code && `· ${course.course_code}`}</div>}
+            <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.4, marginBottom: 6 }}>{course.title}</div>
+            <div style={{ fontSize: 12, color: '#888', marginBottom: 8, lineHeight: 1.4 }}>{course.subtitle}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, color: '#BA7517' }}>★ New</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: '#0F6E56' }}>
+                {course.price === 0 ? 'Free' : `GH₵ ${course.price}`}
+              </span>
+            </div>
           </div>
-        )}
-      </section>
+        </Link>
+      ))}
+    </div>
+  )}
+</section>
 
       {/* INSTRUCTOR BANNER */}
       <section style={{ padding: '0 1.25rem 2rem' }}>
