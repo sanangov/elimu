@@ -1,9 +1,12 @@
 'use client'
+import MaterialsList from '@/app/components/MaterialsList'
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ReviewForm from '@/app/components/ReviewForm'
+
+
 
 export default function LearnPage() {
   const router = useRouter()
@@ -16,6 +19,7 @@ export default function LearnPage() {
   const [loading, setLoading] = useState(true)
   const [showCurriculum, setShowCurriculum] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [materials, setMaterials] = useState([])
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768)
@@ -51,6 +55,12 @@ export default function LearnPage() {
       setSections(sectionsData || [])
       const firstLesson = sectionsData?.[0]?.course_lessons?.[0]
       if (firstLesson) setActiveLesson(firstLesson)
+        const { data: materialsData } = await supabase
+          .from('course_materials')
+          .select('*')
+          .eq('course_id', courseData.id)
+          .order('created_at', { ascending: false })
+        setMaterials(materialsData || [])
       setLoading(false)
     }
     getData()
@@ -185,6 +195,14 @@ export default function LearnPage() {
             {showCurriculum ? '▲ Hide curriculum' : '▼ Course curriculum'} · {sections.length} sections · {totalLessons} lessons
           </button>
 
+          {/* MATERIALS */}
+          {materials.length > 0 && (
+            <div style={{ padding: '1rem', background: '#1A1A1A', borderTop: '0.5px solid #333' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#ccc', marginBottom: 10 }}>📚 Study Materials</div>
+              <MaterialsList materials={materials} canDelete={false} />
+            </div>
+          )}
+
           {/* CURRICULUM LIST — toggleable */}
           {showCurriculum && (
             <div style={{ flex: 1, overflowY: 'auto', background: '#1A1A1A' }}>
@@ -209,13 +227,20 @@ export default function LearnPage() {
         /* DESKTOP LAYOUT */
         <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
+        
           {/* SIDEBAR */}
-          <div style={{ width: 280, flexShrink: 0, background: '#1A1A1A', borderRight: '0.5px solid #333', overflowY: 'auto' }}>
-            <CurriculumList />
+      <div style={{ width: 280, flexShrink: 0, background: '#1A1A1A', borderRight: '0.5px solid #333', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <CurriculumList />
+        {materials.length > 0 && (
+          <div style={{ padding: '1rem', borderTop: '0.5px solid #333', flexShrink: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#aaa', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.5px' }}>📚 Study Materials</div>
+            <MaterialsList materials={materials} canDelete={false} />
           </div>
+        )}
+      </div>
 
           {/* VIDEO AREA */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto', minWidth: 0 }}>
             {activeLesson ? (
               <>
                 <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000', flexShrink: 0 }}>
@@ -253,6 +278,8 @@ export default function LearnPage() {
                   </div>
                 </div>
 
+                {/* MATERIALS */}
+                
                 {progress === 100 && (
                   <div style={{ padding: '1.5rem', background: '#1A1A1A', borderTop: '0.5px solid #333', overflowY: 'auto' }}>
                     <ReviewForm
