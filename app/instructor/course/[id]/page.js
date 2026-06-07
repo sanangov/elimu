@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import MaterialsUpload from '@/app/components/MaterialsUpload'
+import MaterialsList from '@/app/components/MaterialsList'
 
 export default function EditCourse() {
   const router = useRouter()
@@ -13,6 +15,7 @@ export default function EditCourse() {
   const [newSection, setNewSection] = useState('')
   const [publishing, setPublishing] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [materials, setMaterials] = useState([])
 
   useEffect(() => {
     const getData = async () => {
@@ -27,6 +30,13 @@ export default function EditCourse() {
         .from('course_sections').select('*, course_lessons(*)')
         .eq('course_id', id).order('position')
       setSections(sectionsData || [])
+
+      const { data: materialsData } = await supabase
+        .from('course_materials')
+        .select('*')
+        .eq('course_id', id)
+        .order('created_at', { ascending: false })
+      setMaterials(materialsData || [])
       setLoading(false)
     }
     getData()
@@ -177,6 +187,7 @@ export default function EditCourse() {
           </div>
         </div>
 
+        
         {/* TIPS */}
         <div style={{ background: '#E1F5EE', border: '0.5px solid #9FE1CB', borderRadius: 12, padding: '1.25rem' }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: '#085041', marginBottom: 10 }}>💡 Tips for a great course</div>
@@ -191,7 +202,31 @@ export default function EditCourse() {
             </div>
           ))}
         </div>
+
+        {/* STUDY MATERIALS */}
+        <div style={{ background: 'white', border: '0.5px solid #e5e5e5', borderRadius: 12, padding: '1.25rem', marginTop: '1rem' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>📚 Study materials</div>
+          <div style={{ fontSize: 13, color: '#888', marginBottom: '1rem', lineHeight: 1.6 }}>
+            Upload lecture notes, slides, past questions and reading materials. Students can download these after enrolling.
+          </div>
+          <MaterialsList
+            materials={materials}
+            canDelete={true}
+            onDelete={async (materialId) => {
+              await supabase.from('course_materials').delete().eq('id', materialId)
+              setMaterials(materials.filter(m => m.id !== materialId))
+            }}
+          />
+          <div style={{ marginTop: '1rem' }}>
+            <MaterialsUpload
+              courseId={id}
+              onMaterialAdded={(mat) => setMaterials([mat, ...materials])}
+            />
+          </div>
+        </div>
+
       </div>
     </div>
   )
 }
+      
