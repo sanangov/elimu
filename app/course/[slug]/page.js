@@ -131,7 +131,7 @@ const handleEnroll = async () => {
       course_title: course.title,
       user_id: user.id,
     },
-      onSuccess: async (transaction) => {
+      onSuccs: async (transaction) => {
     const { error } = await supabase
       .from('enrollments')
       .insert({
