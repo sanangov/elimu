@@ -13,13 +13,15 @@ export default function InstructorApply() {
   const [error, setError] = useState('')
   const [existingProfile, setExistingProfile] = useState(null)
   const [form, setForm] = useState({
-    first_name: '',
-    last_name: '',
-    bio: '',
-    qualifications: '',
-    institution: '',
-    subject_area: '',
-  })
+  first_name: '',
+  last_name: '',
+  email: '',
+  phone: '',
+  bio: '',
+  qualifications: '',
+  institution: '',
+  subject_area: '',
+})
 
   useEffect(() => {
     const getData = async () => {
@@ -31,6 +33,7 @@ export default function InstructorApply() {
         ...prev,
         first_name: session.user.user_metadata?.first_name || '',
         last_name: session.user.user_metadata?.last_name || '',
+        email: session.user.email || '',
       }))
 
       const { data: profile } = await supabase
@@ -49,8 +52,8 @@ export default function InstructorApply() {
 
   const handleSubmit = async () => {
     setError('')
-    if (!form.bio || !form.qualifications || !form.institution || !form.subject_area) {
-      setError('Please fill in all fields.')
+    if (!form.email || !form.phone || !form.bio || !form.qualifications || !form.institution || !form.subject_area) {
+      setError('Please fill in all fields including email and phone number.')
       return
     }
     setSubmitting(true)
@@ -160,6 +163,29 @@ export default function InstructorApply() {
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Bio — tell students about yourself</label>
             <textarea value={form.bio} onChange={e => update('bio', e.target.value)} placeholder="e.g. I am a lecturer at UCC with 10 years of experience teaching Financial Accounting. I hold an MSc in Accounting from KNUST..." rows={4} style={{ width: '100%', padding: '10px 14px', border: '0.5px solid #ccc', borderRadius: 8, fontSize: 14, outline: 'none', fontFamily: 'DM Sans, sans-serif', resize: 'vertical' }} />
+          </div>
+        </div>
+        {/*CONTACT INFORMATION*/}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Email address *</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={e => update('email', e.target.value)}
+              placeholder="your@email.com"
+              style={{ width: '100%', padding: '10px 14px', border: '0.5px solid #ccc', borderRadius: 8, fontSize: 14, outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Phone number *</label>
+            <input
+              type="tel"
+              value={form.phone}
+              onChange={e => update('phone', e.target.value)}
+              placeholder="e.g. 0244123456"
+              style={{ width: '100%', padding: '10px 14px', border: '0.5px solid #ccc', borderRadius: 8, fontSize: 14, outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
+            />
           </div>
         </div>
 
