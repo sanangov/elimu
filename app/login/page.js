@@ -28,13 +28,33 @@ export default function LoginPage() {
       return
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/dashboard')
+      const role = data.user?.user_metadata?.role
+
+      if (role === 'instructor') {
+        const { data: profile } = await supabase
+          .from('instructor_profiles')
+          .select('status')
+          .eq('user_id', data.user.id)
+          .single()
+
+        if (!profile) {
+          router.push('/instructor/apply')
+        } else if (profile.status === 'pending') {
+          router.push('/instructor/apply')
+        } else if (profile.status === 'rejected') {
+          router.push('/instructor/apply')
+        } else if (profile.status === 'approved') {
+          router.push('/instructor')
+        }
+      } else {
+        router.push('/dashboard')
+      }
     }
   }
 
