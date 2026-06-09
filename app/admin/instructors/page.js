@@ -35,29 +35,53 @@ export default function AdminInstructors() {
   }
 
   const handleApprove = async (id) => {
-    setProcessing(true)
-    await supabase.from('instructor_profiles')
-      .update({ status: 'approved', reviewed_at: new Date().toISOString() })
-      .eq('id', id)
-    setInstructors(instructors.filter(i => i.id !== id))
-    setSelected(null)
-    setProcessing(false)
-  }
+  setProcessing(true)
+  const instructor = instructors.find(i => i.id === id)
+  await supabase.from('instructor_profiles')
+    .update({ status: 'approved', reviewed_at: new Date().toISOString() })
+    .eq('id', id)
+
+  await fetch('/api/send-approval-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: instructor.email,
+      firstName: instructor.first_name,
+      approved: true,
+    })
+  })
+
+  setInstructors(instructors.filter(i => i.id !== id))
+  setSelected(null)
+  setProcessing(false)
+}
 
   const handleReject = async (id) => {
-    if (!rejectionReason.trim()) {
-      alert('Please provide a rejection reason.')
-      return
-    }
-    setProcessing(true)
-    await supabase.from('instructor_profiles')
-      .update({ status: 'rejected', rejection_reason: rejectionReason, reviewed_at: new Date().toISOString() })
-      .eq('id', id)
-    setInstructors(instructors.filter(i => i.id !== id))
-    setSelected(null)
-    setRejectionReason('')
-    setProcessing(false)
+  if (!rejectionReason.trim()) {
+    alert('Please provide a rejection reason.')
+    return
   }
+  setProcessing(true)
+  const instructor = instructors.find(i => i.id === id)
+  await supabase.from('instructor_profiles')
+    .update({ status: 'rejected', rejection_reason: rejectionReason, reviewed_at: new Date().toISOString() })
+    .eq('id', id)
+
+  await fetch('/api/send-approval-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: instructor.email,
+      firstName: instructor.first_name,
+      approved: false,
+    })
+  })
+
+  setInstructors(instructors.filter(i => i.id !== id))
+  setSelected(null)
+  setRejectionReason('')
+  setProcessing(false)
+}
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F8F6' }}>
