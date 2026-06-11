@@ -13,9 +13,11 @@ export default function AdminDashboard() {
   })
   const [recentInstructors, setRecentInstructors] = useState([])
   const [loading, setLoading] = useState(true)
+  const [refresh, setRefresh] = useState(0)
 
   useEffect(() => {
     const init = async () => {
+      await new Promise(resolve => setTimeout(resolve, 500))
       const ok = await requireAdmin(router)
       if (!ok) return
 
@@ -41,7 +43,14 @@ export default function AdminDashboard() {
       setLoading(false)
     }
     init()
-  }, [router])
+  }, [router, refresh])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefresh(r => r + 1)
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8F8F6' }}>
@@ -83,9 +92,18 @@ export default function AdminDashboard() {
 
       {/* MAIN */}
       <main style={{ flex: 1, padding: '1.5rem', overflow: 'auto' }}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>Admin Dashboard</h1>
-          <p style={{ fontSize: 13, color: '#888' }}>Manage your entire Elimu platform from here.</p>
+
+        {/* TOP BAR WITH REFRESH */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div>
+            <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>Admin Dashboard</h1>
+            <p style={{ fontSize: 13, color: '#888' }}>Manage your entire Elimu platform from here.</p>
+          </div>
+          <button
+            onClick={() => { setLoading(true); setRefresh(r => r + 1) }}
+            style={{ padding: '8px 16px', background: '#0F6E56', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+            🔄 Refresh
+          </button>
         </div>
 
         {/* STATS */}
