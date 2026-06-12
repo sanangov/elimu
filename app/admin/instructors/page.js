@@ -93,11 +93,13 @@ export default function AdminInstructors() {
           <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontFamily: 'DM Sans, sans-serif', fontWeight: 400, marginTop: 2 }}>ADMIN PANEL</div>
         </div>
         {[
-          ['🏠', 'Dashboard', '/admin'],
-          ['👨‍🏫', 'Instructors', '/admin/instructors'],
-          ['🏛️', 'Universities', '/admin/universities'],
-          ['📚', 'Courses', '/admin/courses'],
-        ].map(([icon, label, href]) => (
+          ['📧 Email', selected.email],
+          ['📱 Phone', selected.phone],
+          ['📚 Subject Area', selected.subject_area],
+          ['🎓 Qualifications', selected.qualifications],
+          ['🏛️ Institution', selected.institution],
+          ['📝 Bio', selected.bio],
+        ].map(([label, value]) => (
           <Link key={label} href={href} style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '10px 1.25rem',
             fontSize: 13, fontWeight: 500, textDecoration: 'none',
