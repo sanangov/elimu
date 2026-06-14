@@ -16,6 +16,7 @@ export default function AdminInstructors() {
 
   useEffect(() => {
     const init = async () => {
+      await new Promise(resolve => setTimeout(resolve, 500))
       const ok = await requireAdmin(router)
       if (!ok) return
       loadInstructors()
@@ -35,53 +36,53 @@ export default function AdminInstructors() {
   }
 
   const handleApprove = async (id) => {
-  setProcessing(true)
-  const instructor = instructors.find(i => i.id === id)
-  await supabase.from('instructor_profiles')
-    .update({ status: 'approved', reviewed_at: new Date().toISOString() })
-    .eq('id', id)
+    setProcessing(true)
+    const instructor = instructors.find(i => i.id === id)
+    await supabase.from('instructor_profiles')
+      .update({ status: 'approved', reviewed_at: new Date().toISOString() })
+      .eq('id', id)
 
-  await fetch('/api/send-approval-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: instructor.email,
-      firstName: instructor.first_name,
-      approved: true,
+    await fetch('/api/send-approval-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: instructor.email,
+        firstName: instructor.first_name,
+        approved: true,
+      })
     })
-  })
 
-  setInstructors(instructors.filter(i => i.id !== id))
-  setSelected(null)
-  setProcessing(false)
-}
+    setInstructors(instructors.filter(i => i.id !== id))
+    setSelected(null)
+    setProcessing(false)
+  }
 
   const handleReject = async (id) => {
-  if (!rejectionReason.trim()) {
-    alert('Please provide a rejection reason.')
-    return
-  }
-  setProcessing(true)
-  const instructor = instructors.find(i => i.id === id)
-  await supabase.from('instructor_profiles')
-    .update({ status: 'rejected', rejection_reason: rejectionReason, reviewed_at: new Date().toISOString() })
-    .eq('id', id)
+    if (!rejectionReason.trim()) {
+      alert('Please provide a rejection reason.')
+      return
+    }
+    setProcessing(true)
+    const instructor = instructors.find(i => i.id === id)
+    await supabase.from('instructor_profiles')
+      .update({ status: 'rejected', rejection_reason: rejectionReason, reviewed_at: new Date().toISOString() })
+      .eq('id', id)
 
-  await fetch('/api/send-approval-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: instructor.email,
-      firstName: instructor.first_name,
-      approved: false,
+    await fetch('/api/send-approval-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: instructor.email,
+        firstName: instructor.first_name,
+        approved: false,
+      })
     })
-  })
 
-  setInstructors(instructors.filter(i => i.id !== id))
-  setSelected(null)
-  setRejectionReason('')
-  setProcessing(false)
-}
+    setInstructors(instructors.filter(i => i.id !== id))
+    setSelected(null)
+    setRejectionReason('')
+    setProcessing(false)
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F8F6' }}>
@@ -93,13 +94,11 @@ export default function AdminInstructors() {
           <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontFamily: 'DM Sans, sans-serif', fontWeight: 400, marginTop: 2 }}>ADMIN PANEL</div>
         </div>
         {[
-          ['📧 Email', selected.email],
-          ['📱 Phone', selected.phone],
-          ['📚 Subject Area', selected.subject_area],
-          ['🎓 Qualifications', selected.qualifications],
-          ['🏛️ Institution', selected.institution],
-          ['📝 Bio', selected.bio],
-        ].map(([label, value]) => (
+          ['🏠', 'Dashboard', '/admin'],
+          ['👨‍🏫', 'Instructors', '/admin/instructors'],
+          ['🏛️', 'Universities', '/admin/universities'],
+          ['📚', 'Courses', '/admin/courses'],
+        ].map(([icon, label, href]) => (
           <Link key={label} href={href} style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '10px 1.25rem',
             fontSize: 13, fontWeight: 500, textDecoration: 'none',
@@ -124,9 +123,9 @@ export default function AdminInstructors() {
         {/* FILTER TABS */}
         <div style={{ display: 'flex', gap: 8, marginBottom: '1.5rem' }}>
           {['pending', 'approved', 'rejected'].map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{
+            <button key={f} onClick={() => { setFilter(f); setSelected(null) }} style={{
               padding: '8px 20px', borderRadius: 20, fontSize: 13, fontWeight: 500,
-              cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', border: 'none',
+              cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
               background: filter === f ? '#0F6E56' : 'white',
               color: filter === f ? 'white' : '#555',
               border: `0.5px solid ${filter === f ? '#0F6E56' : '#e5e5e5'}`,
@@ -185,36 +184,43 @@ export default function AdminInstructors() {
                 <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: 18 }}>✕</button>
               </div>
 
+              {/* AVATAR */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem', padding: '1rem', background: '#F8F8F6', borderRadius: 8 }}>
                 <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#E1F5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 600, color: '#0F6E56' }}>
-                  {selected.first_name?.[0]?.toUpperCase()}
+                  {selected?.first_name?.[0]?.toUpperCase()}
                 </div>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 600 }}>{selected.first_name} {selected.last_name}</div>
-                  <div style={{ fontSize: 13, color: '#888' }}>{selected.institution}</div>
+                  <div style={{ fontSize: 16, fontWeight: 600 }}>{selected?.first_name} {selected?.last_name}</div>
+                  <div style={{ fontSize: 13, color: '#888' }}>{selected?.institution}</div>
                 </div>
               </div>
 
+              {/* DETAILS */}
               {[
-                ['📚 Subject Area', selected.subject_area],
-                ['🎓 Qualifications', selected.qualifications],
-                ['🏛️ Institution', selected.institution],
-                ['📝 Bio', selected.bio],
+                ['📧 Email', selected?.email],
+                ['📱 Phone', selected?.phone],
+                ['📚 Subject Area', selected?.subject_area],
+                ['🎓 Qualifications', selected?.qualifications],
+                ['🏛️ Institution', selected?.institution],
+                ['📝 Bio', selected?.bio],
               ].map(([label, value]) => (
                 <div key={label} style={{ marginBottom: '0.75rem' }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: '#888', marginBottom: 4 }}>{label}</div>
-                  <div style={{ fontSize: 13, color: '#2C2C2A', lineHeight: 1.6, background: '#F8F8F6', padding: '8px 12px', borderRadius: 6 }}>{value || 'Not provided'}</div>
+                  <div style={{ fontSize: 13, color: '#2C2C2A', lineHeight: 1.6, background: '#F8F8F6', padding: '8px 12px', borderRadius: 6 }}>
+                    {value || 'Not provided'}
+                  </div>
                 </div>
               ))}
 
-              {selected.id_document_url && (
+              {selected?.id_document_url && (
                 <div style={{ marginBottom: '1rem' }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: '#888', marginBottom: 4 }}>📎 ID Document</div>
                   <a href={selected.id_document_url} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: '#1D9E75', fontWeight: 500 }}>View document →</a>
                 </div>
               )}
 
-              {selected.status === 'pending' && (
+              {/* APPROVE / REJECT BUTTONS */}
+              {selected?.status === 'pending' && (
                 <div style={{ marginTop: '1rem', borderTop: '0.5px solid #e5e5e5', paddingTop: '1rem' }}>
                   <button
                     onClick={() => handleApprove(selected.id)}
@@ -222,7 +228,6 @@ export default function AdminInstructors() {
                     style={{ width: '100%', padding: 12, background: '#0F6E56', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', marginBottom: 10 }}>
                     {processing ? 'Processing...' : '✅ Approve Instructor'}
                   </button>
-
                   <div style={{ marginBottom: 8 }}>
                     <label style={{ display: 'block', fontSize: 12, fontWeight: 500, marginBottom: 6, color: '#888' }}>Rejection reason (required to reject)</label>
                     <textarea
@@ -242,7 +247,7 @@ export default function AdminInstructors() {
                 </div>
               )}
 
-              {selected.status === 'rejected' && selected.rejection_reason && (
+              {selected?.status === 'rejected' && selected?.rejection_reason && (
                 <div style={{ background: '#FCEBEB', border: '0.5px solid #F09595', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#A32D2D', marginTop: '1rem' }}>
                   <strong>Rejection reason:</strong> {selected.rejection_reason}
                 </div>
