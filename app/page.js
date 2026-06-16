@@ -66,14 +66,14 @@ export default function Home() {
     return () => subscription.unsubscribe()
   }, [])
 
-  useEffect(() => {
+    useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest('.user-dropdown')) {
         setShowDropdown(false)
       }
     }
-    document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   return (
@@ -84,7 +84,7 @@ export default function Home() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0.75rem 1.25rem', background: 'white',
         borderBottom: '0.5px solid #e5e5e5', position: 'sticky', top: 0, zIndex: 10,
-        width: '100%', overflow: 'hidden'
+        width: '100%'
       }}>
         <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 900, color: '#0F6E56' }}>
           Elim<span style={{ color: '#1D9E75' }}>u</span>
@@ -100,7 +100,10 @@ export default function Home() {
           {user ? (
             <div>
               <button
-                onClick={() => setShowDropdown(!showDropdown)}
+                onMouseDown={(e) => {
+                  e.stopPropagation()
+                  setShowDropdown(prev => !prev)
+                }}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', background: '#E1F5EE', border: '1.5px solid #1D9E75', borderRadius: 20, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
               >
                 <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#0F6E56', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: 'white' }}>
@@ -355,4 +358,4 @@ export default function Home() {
 
     </main>
   )
-}
+} 8 
