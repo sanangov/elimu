@@ -18,6 +18,9 @@ export default function Home() {
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState('All')
+  const [user, setUser] = useState(null)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [userRole, setUserRole] = useState('student')
 
   const filteredCourses = activeFilter === 'All'
     ? courses
@@ -41,6 +44,38 @@ export default function Home() {
     getCourses()
   }, [])
 
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        setUser(session.user)
+        setUserRole(session.user.user_metadata?.role || 'student')
+      }
+    }
+    getUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setUser(session.user)
+        setUserRole(session.user.user_metadata?.role || 'student')
+      } else {
+        setUser(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.user-dropdown')) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
+
   return (
     <main>
 
@@ -59,9 +94,88 @@ export default function Home() {
             <Link key={l} href={l === 'Teach on Elimu' ? '/instructor/apply' : l === 'Explore' ? '/search' : '#'} style={{ fontSize: 14, color: '#888', fontWeight: 500, textDecoration: 'none' }}>{l}</Link>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Link href="/login" style={{ padding: '7px 14px', border: '1.5px solid #1D9E75', borderRadius: 8, color: '#0F6E56', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>Log in</Link>
-          <Link href="/signup" style={{ padding: '7px 14px', background: '#0F6E56', borderRadius: 8, color: 'white', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>Sign up</Link>
+
+        {/* USER DROPDOWN */}
+        <div style={{ position: 'relative' }} className="user-dropdown">
+          {user ? (
+            <div>
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', background: '#E1F5EE', border: '1.5px solid #1D9E75', borderRadius: 20, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
+              >
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#0F6E56', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: 'white' }}>
+                  {user?.user_metadata?.first_name?.[0]?.toUpperCase() || '?'}
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#0F6E56' }}>
+                  {user?.user_metadata?.first_name || 'Account'}
+                </span>
+                <span style={{ fontSize: 10, color: '#0F6E56' }}>▼</span>
+              </button>
+
+              {showDropdown && (
+                <div style={{
+                  position: 'absolute', top: '110%', right: 0, background: 'white',
+                  border: '0.5px solid #e5e5e5', borderRadius: 12, padding: '8px 0',
+                  minWidth: 200, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 100
+                }}>
+                  <div style={{ padding: '10px 16px', borderBottom: '0.5px solid #e5e5e5', marginBottom: 4 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{user?.user_metadata?.first_name} {user?.user_metadata?.last_name}</div>
+                    <div style={{ fontSize: 11, color: '#888' }}>{user?.email}</div>
+                  </div>
+
+                  {[
+                    ['📚', 'My Courses', '/dashboard'],
+                    ['👤', 'My Profile', '/dashboard'],
+                    ['⚙️', 'Settings', '/dashboard'],
+                  ].map(([icon, label, href]) => (
+                    <Link
+                      key={label}
+                      href={href}
+                      onClick={() => setShowDropdown(false)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', fontSize: 13, color: '#2C2C2A', textDecoration: 'none', fontWeight: 500 }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#F8F8F6'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <span>{icon}</span>{label}
+                    </Link>
+                  ))}
+
+                  {userRole === 'instructor' && (
+                    <Link
+                      href="/instructor"
+                      onClick={() => setShowDropdown(false)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', fontSize: 13, color: '#0F6E56', textDecoration: 'none', fontWeight: 500 }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#F8F8F6'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <span>🎓</span>Instructor Dashboard
+                    </Link>
+                  )}
+
+                  <div style={{ borderTop: '0.5px solid #e5e5e5', marginTop: 4, paddingTop: 4 }}>
+                    <button
+                      onClick={async () => {
+                        await supabase.auth.signOut()
+                        setUser(null)
+                        setShowDropdown(false)
+                        window.location.href = '/'
+                      }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', fontSize: 13, color: '#E24B4A', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', width: '100%', textAlign: 'left', fontWeight: 500 }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#FFF5F5'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <span>🚪</span>Log out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Link href="/login" style={{ padding: '7px 14px', border: '1.5px solid #1D9E75', borderRadius: 8, color: '#0F6E56', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>Log in</Link>
+              <Link href="/signup" style={{ padding: '7px 14px', background: '#0F6E56', borderRadius: 8, color: 'white', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>Sign up</Link>
+            </div>
+          )}
         </div>
       </nav>
 
@@ -131,7 +245,6 @@ export default function Home() {
           <span style={{ fontSize: 13, color: '#1D9E75', fontWeight: 500, cursor: 'pointer' }} onClick={() => window.location.href = '/search'}>See all →</span>
         </div>
 
-        {/* FILTER TABS */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: '1.5rem' }}>
           {['All', 'UCC', 'UG', 'KNUST', 'GIMPA', 'SHS', 'General'].map(filter => (
             <button
