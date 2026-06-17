@@ -129,7 +129,7 @@ export default function Home() {
                   {[
                     ['📚', 'My Courses', '/dashboard'],
                     ['👤', 'My Profile', '/dashboard'],
-                    ['⚙️', 'Settings', '/dashboard'],
+                    ['⚙️', 'Settings', '/settings'],
                   ].map(([icon, label, href]) => (
                     <Link
                       key={label}
