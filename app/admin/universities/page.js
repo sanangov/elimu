@@ -101,8 +101,16 @@ export default function AdminUniversities() {
         ))}
         <div style={{ flex: 1 }} />
         <div style={{ padding: '1rem 1.25rem', borderTop: '0.5px solid rgba(255,255,255,0.1)' }}>
-          <Link href="/" style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>← Back to site</Link>
-        </div>
+        <button
+          onClick={async () => {
+            sessionStorage.removeItem('admin_pin_verified')
+            await supabase.auth.signOut()
+            window.location.href = '/admin/login'
+          }}
+          style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 12, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', padding: 0, marginBottom: 8, display: 'block' }}
+        >🚪 Admin logout</button>
+        <Link href="/" style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>← Back to site</Link>
+      </div>
       </aside>
 
       <main style={{ flex: 1, padding: '1.5rem', overflow: 'auto' }}>
