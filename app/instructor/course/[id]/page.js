@@ -16,6 +16,10 @@ export default function EditCourse() {
   const [publishing, setPublishing] = useState(false)
   const [saved, setSaved] = useState(false)
   const [materials, setMaterials] = useState([])
+  const [assignments, setAssignments] = useState([])
+  const [showAssignmentForm, setShowAssignmentForm] = useState(false)
+  const [newAssignment, setNewAssignment] = useState({ title: '', description: '', due_date: '' })
+  const [savingAssignment, setSavingAssignment] = useState(false)
 
   useEffect(() => {
     const getData = async () => {
@@ -37,6 +41,12 @@ export default function EditCourse() {
         .eq('course_id', id)
         .order('created_at', { ascending: false })
       setMaterials(materialsData || [])
+      const { data: assignmentsData } = await supabase
+        .from('assignments')
+        .select('*')
+        .eq('course_id', id)
+        .order('created_at', { ascending: false })
+      setAssignments(assignmentsData || [])
       setLoading(false)
     }
     getData()
@@ -99,6 +109,30 @@ export default function EditCourse() {
     await supabase.from('courses').update({ status: 'draft' }).eq('id', id)
     setCourse({ ...course, status: 'draft' })
   }
+
+      const addAssignment = async () => {
+      if (!newAssignment.title || !newAssignment.description) {
+        alert('Please fill in title and description.')
+        return
+      }
+      setSavingAssignment(true)
+      const { data } = await supabase.from('assignments').insert({
+        course_id: id,
+        title: newAssignment.title,
+        description: newAssignment.description,
+        due_date: newAssignment.due_date || null,
+      }).select().single()
+      setAssignments([data, ...assignments])
+      setNewAssignment({ title: '', description: '', due_date: '' })
+      setShowAssignmentForm(false)
+      setSavingAssignment(false)
+    }
+
+    const deleteAssignment = async (assignmentId) => {
+      if (!confirm('Delete this assignment?')) return
+      await supabase.from('assignments').delete().eq('id', assignmentId)
+      setAssignments(assignments.filter(a => a.id !== assignmentId))
+    }
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -223,6 +257,81 @@ export default function EditCourse() {
               onMaterialAdded={(mat) => setMaterials([mat, ...materials])}
             />
           </div>
+        </div>
+
+        {/* ASSIGNMENTS */}
+        <div style={{ background: 'white', border: '0.5px solid #e5e5e5', borderRadius: 12, padding: '1.25rem', marginTop: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>✏️ End-of-course assignment</div>
+              <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Students submit this after completing all lessons</div>
+            </div>
+            {assignments.length === 0 && (
+              <button
+                onClick={() => setShowAssignmentForm(!showAssignmentForm)}
+                style={{ padding: '7px 16px', background: '#0F6E56', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+                + Add assignment
+              </button>
+            )}
+          </div>
+
+          {showAssignmentForm && (
+            <div style={{ background: '#F8F8F6', borderRadius: 10, padding: '1rem', marginBottom: '1rem' }}>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Assignment title *</label>
+                <input
+                  value={newAssignment.title}
+                  onChange={e => setNewAssignment({ ...newAssignment, title: e.target.value })}
+                  placeholder="e.g. Final Assessment — Financial Accounting"
+                  style={{ width: '100%', padding: '10px 14px', border: '0.5px solid #ccc', borderRadius: 8, fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
+                />
+              </div>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Instructions / Questions *</label>
+                <textarea
+                  value={newAssignment.description}
+                  onChange={e => setNewAssignment({ ...newAssignment, description: e.target.value })}
+                  placeholder="Write your assignment questions or instructions here..."
+                  rows={6}
+                  style={{ width: '100%', padding: '10px 14px', border: '0.5px solid #ccc', borderRadius: 8, fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif', resize: 'vertical' }}
+                />
+              </div>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Due date (optional)</label>
+                <input
+                  type="date"
+                  value={newAssignment.due_date}
+                  onChange={e => setNewAssignment({ ...newAssignment, due_date: e.target.value })}
+                  style={{ width: '100%', padding: '10px 14px', border: '0.5px solid #ccc', borderRadius: 8, fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={addAssignment} disabled={savingAssignment} style={{ padding: '9px 20px', background: '#0F6E56', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+                  {savingAssignment ? 'Saving...' : 'Save assignment'}
+                </button>
+                <button onClick={() => setShowAssignmentForm(false)} style={{ padding: '9px 16px', background: 'white', color: '#888', border: '0.5px solid #e5e5e5', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {assignments.length === 0 && !showAssignmentForm ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#888', fontSize: 13 }}>
+              No assignment yet. Add one to challenge your students at the end of the course.
+            </div>
+          ) : (
+            assignments.map(assignment => (
+              <div key={assignment.id} style={{ background: '#F8F8F6', borderRadius: 10, padding: '1rem', marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{assignment.title}</div>
+                  <button onClick={() => deleteAssignment(assignment.id)} style={{ padding: '4px 10px', border: '0.5px solid #e5e5e5', borderRadius: 6, fontSize: 12, color: '#E24B4A', cursor: 'pointer', background: 'white', fontFamily: 'DM Sans, sans-serif', flexShrink: 0 }}>Delete</button>
+                </div>
+                <div style={{ fontSize: 13, color: '#555', lineHeight: 1.7, whiteSpace: 'pre-wrap', marginBottom: 8 }}>{assignment.description}</div>
+                {assignment.due_date && (
+                  <div style={{ fontSize: 12, color: '#888' }}>📅 Due: {new Date(assignment.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                )}
+              </div>
+            ))
+          )}
         </div>
 
       </div>

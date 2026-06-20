@@ -20,6 +20,11 @@ export default function LearnPage() {
   const [showCurriculum, setShowCurriculum] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [materials, setMaterials] = useState([])
+  const [assignment, setAssignment] = useState(null)
+  const [submission, setSubmission] = useState(null)
+  const [answer, setAnswer] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768)
@@ -61,6 +66,22 @@ export default function LearnPage() {
           .eq('course_id', courseData.id)
           .order('created_at', { ascending: false })
         setMaterials(materialsData || [])
+        const { data: assignmentData } = await supabase
+        .from('assignments')
+        .select('*')
+        .eq('course_id', courseData.id)
+        .single()
+
+      if (assignmentData) {
+        setAssignment(assignmentData)
+        const { data: submissionData } = await supabase
+          .from('submissions')
+          .select('*')
+          .eq('assignment_id', assignmentData.id)
+          .eq('student_id', session.user.id)
+          .single()
+        if (submissionData) setSubmission(submissionData)
+      }
       setLoading(false)
     }
     getData()
@@ -76,6 +97,22 @@ export default function LearnPage() {
   const markComplete = (lessonId) => {
     if (!completed.includes(lessonId)) setCompleted([...completed, lessonId])
   }
+
+      const submitAssignment = async () => {
+      if (!answer.trim()) {
+        alert('Please write your answer before submitting.')
+        return
+      }
+      setSubmitting(true)
+      const { data } = await supabase.from('submissions').insert({
+        assignment_id: assignment.id,
+        student_id: user.id,
+        content: answer,
+      }).select().single()
+      setSubmission(data)
+      setSubmitSuccess(true)
+      setSubmitting(false)
+    }
 
   const totalLessons = sections.reduce((acc, s) => acc + (s.course_lessons?.length || 0), 0)
   const progress = totalLessons > 0 ? Math.round((completed.length / totalLessons) * 100) : 0
@@ -203,6 +240,40 @@ export default function LearnPage() {
             </div>
           )}
 
+          {/* ASSIGNMENT */}
+          {assignment && progress === 100 && (
+            <div style={{ padding: '1rem', background: '#1A1A1A', borderTop: '0.5px solid #333' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#ccc', marginBottom: 4 }}>✏️ {assignment.title}</div>
+              {assignment.due_date && (
+                <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>📅 Due: {new Date(assignment.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+              )}
+              {submission ? (
+                <div style={{ background: '#0F6E56', borderRadius: 8, padding: '10px 14px' }}>
+                  <div style={{ fontSize: 13, color: 'white', fontWeight: 500 }}>✅ Assignment submitted!</div>
+                  {submission.score && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Score: {submission.score}/100</div>}
+                  {submission.feedback && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Feedback: {submission.feedback}</div>}
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 12, color: '#aaa', lineHeight: 1.7, marginBottom: 10, whiteSpace: 'pre-wrap' }}>{assignment.description}</div>
+                  <textarea
+                    value={answer}
+                    onChange={e => setAnswer(e.target.value)}
+                    placeholder="Write your answer here..."
+                    rows={5}
+                    style={{ width: '100%', padding: '10px 12px', border: '0.5px solid #444', borderRadius: 8, fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif', background: '#0F0F0F', color: 'white', resize: 'vertical', marginBottom: 10 }}
+                  />
+                  <button
+                    onClick={submitAssignment}
+                    disabled={submitting}
+                    style={{ width: '100%', padding: 12, background: submitting ? '#0F6E56' : '#1D9E75', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+                    {submitting ? 'Submitting...' : 'Submit assignment →'}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
           {/* CURRICULUM LIST — toggleable */}
           {showCurriculum && (
             <div style={{ flex: 1, overflowY: 'auto', background: '#1A1A1A' }}>
@@ -288,7 +359,41 @@ export default function LearnPage() {
                       onReviewSubmitted={(r) => console.log('Review:', r)}
                     />
                   </div>
+
                 )}
+                {/* ASSIGNMENT */}
+              {assignment && progress === 100 && (
+                <div style={{ padding: '1.5rem', background: '#1A1A1A', borderTop: '0.5px solid #333', overflowY: 'auto' }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#ccc', marginBottom: 4 }}>✏️ {assignment.title}</div>
+                  {assignment.due_date && (
+                    <div style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>📅 Due: {new Date(assignment.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                  )}-
+                  {submission ? (
+                    <div style={{ background: '#0F6E56', borderRadius: 8, padding: '10px 14px' }}>
+                      <div style={{ fontSize: 13, color: 'white', fontWeight: 500 }}>✅ Assignment submitted!</div>
+                      {submission.score && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Score: {submission.score}/100</div>}
+                      {submission.feedback && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Feedback: {submission.feedback}</div>}
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.7, marginBottom: 12, whiteSpace: 'pre-wrap' }}>{assignment.description}</div>
+                      <textarea
+                        value={answer}
+                        onChange={e => setAnswer(e.target.value)}
+                        placeholder="Write your answer here..."
+                        rows={6}
+                        style={{ width: '100%', padding: '10px 12px', border: '0.5px solid #444', borderRadius: 8, fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif', background: '#0F0F0F', color: 'white', resize: 'vertical', marginBottom: 12 }}
+                      />
+                      <button
+                        onClick={submitAssignment}
+                        disabled={submitting}
+                        style={{ width: '100%', padding: 12, background: submitting ? '#0F6E56' : '#1D9E75', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+                        {submitting ? 'Submitting...' : 'Submit assignment →'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
               </>
             ) : (
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
