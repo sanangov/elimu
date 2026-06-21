@@ -18,6 +18,8 @@ export default function CoursePage() {
   const [enrolled, setEnrolled] = useState(false)
   const [loading, setLoading] = useState(true)
   const [enrollmentCount, setEnrollmentCount] = useState(0)
+  const [inWishlist, setInWishlist] = useState(false)
+  const [wishlistLoading, setWishlistLoading] = useState(false)
 
   useEffect(() => {
     const getData = async () => {
@@ -77,6 +79,15 @@ export default function CoursePage() {
           .eq('course_slug', params.slug)
           .single()
         if (enrollment) setEnrolled(true)
+      } 
+      if (session) {
+        const { data: wishlistItem } = await supabase
+          .from('wishlists')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .eq('course_slug', params.slug)
+          .single()
+        if (wishlistItem) setInWishlist(true)
       }
 
       setLoading(false)
@@ -143,6 +154,33 @@ export default function CoursePage() {
     })
     handler.openIframe()
   }
+
+      const toggleWishlist = async () => {
+      if (!user) {
+        router.push('/login')
+        return
+      }
+      setWishlistLoading(true)
+
+      if (inWishlist) {
+        await supabase
+          .from('wishlists')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('course_slug', course.slug)
+        setInWishlist(false)
+      } else {
+        await supabase
+          .from('wishlists')
+          .insert({
+            user_id: user.id,
+            course_slug: course.slug,
+            course_title: course.title,
+          })
+        setInWishlist(true)
+      }
+      setWishlistLoading(false)
+    }
 
   if (loading || !course) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8F8F6' }}>
@@ -249,19 +287,33 @@ export default function CoursePage() {
                 </>
               )}
 
-              {enrolled ? (
-                <Link href={`/learn/${course.slug}`} style={{ display: 'block', textAlign: 'center', width: '100%', padding: 13, background: '#1D9E75', color: 'white', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 600, textDecoration: 'none', marginBottom: 10 }}>
-                  Continue learning →
-                </Link>
-              ) : (
-                <button onClick={handleEnroll} style={{
-                  width: '100%', padding: 13, background: '#0F6E56', color: 'white',
-                  border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 600,
-                  cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', marginBottom: 10
-                }}>{course.price === 0 ? 'Enroll for free' : 'Enroll now'}</button>
-              )}
+          {enrolled ? (
+            <Link href={`/learn/${course.slug}`} style={{ display: 'block', textAlign: 'center', width: '100%', padding: 13, background: '#1D9E75', color: 'white', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 600, textDecoration: 'none', marginBottom: 10 }}>
+              Continue learning →
+            </Link>
+          ) : (
+            <>
+              <button onClick={handleEnroll} style={{
+                width: '100%', padding: 13, background: '#0F6E56', color: 'white',
+                border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', marginBottom: 10
+              }}>{course.price === 0 ? 'Enroll for free' : 'Enroll now'}</button>
 
-              <div style={{ fontSize: 12, color: '#888', textAlign: 'center', marginBottom: 14 }}>Lifetime access</div>
+              <button
+                onClick={toggleWishlist}
+                disabled={wishlistLoading}
+                style={{
+                  width: '100%', padding: 11, background: inWishlist ? '#FAECE7' : 'transparent',
+                  color: inWishlist ? '#993C1D' : '#0F6E56',
+                  border: `1.5px solid ${inWishlist ? '#F0A98A' : '#1D9E75'}`, borderRadius: 10, fontSize: 14,
+                  fontWeight: 500, cursor: wishlistLoading ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif', marginBottom: 14
+                }}>
+                {inWishlist ? '♥ Remove from wishlist' : '♡ Add to wishlist'}
+              </button>
+            </>
+          )}
+
+          <div style={{ fontSize: 12, color: '#888', textAlign: 'center', marginBottom: 14 }}>Lifetime access</div>
 
               {includes.length > 0 && (
                 <div style={{ borderTop: '0.5px solid #e5e5e5', paddingTop: 12 }}>

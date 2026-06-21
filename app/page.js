@@ -128,6 +128,7 @@ export default function Home() {
 
                   {[
                     ['📚', 'My Courses', '/dashboard'],
+                    ['♡', 'My Wishlist', '/wishlist'],
                     ['👤', 'My Profile', '/dashboard'],
                     ['⚙️', 'Settings', '/settings'],
                   ].map(([icon, label, href]) => (
