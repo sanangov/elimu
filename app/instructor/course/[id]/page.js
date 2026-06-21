@@ -20,6 +20,10 @@ export default function EditCourse() {
   const [showAssignmentForm, setShowAssignmentForm] = useState(false)
   const [newAssignment, setNewAssignment] = useState({ title: '', description: '', due_date: '' })
   const [savingAssignment, setSavingAssignment] = useState(false)
+  const [whatYouLearn, setWhatYouLearn] = useState('')
+  const [requirements, setRequirements] = useState('')
+  const [includes, setIncludes] = useState('')
+  const [savingDetails, setSavingDetails] = useState(false)
 
   useEffect(() => {
     const getData = async () => {
@@ -29,6 +33,10 @@ export default function EditCourse() {
       const { data: courseData } = await supabase
         .from('courses').select('*').eq('id', id).single()
       setCourse(courseData)
+
+      setWhatYouLearn((courseData.what_you_learn || []).join('\n'))
+      setRequirements((courseData.requirements || []).join('\n'))
+      setIncludes((courseData.includes || []).join('\n'))
 
       const { data: sectionsData } = await supabase
         .from('course_sections').select('*, course_lessons(*)')
@@ -110,6 +118,23 @@ export default function EditCourse() {
     setCourse({ ...course, status: 'draft' })
   }
 
+      const saveDetails = async () => {
+      setSavingDetails(true)
+      const what_you_learn = whatYouLearn.split('\n').map(s => s.trim()).filter(Boolean)
+      const reqs = requirements.split('\n').map(s => s.trim()).filter(Boolean)
+      const inc = includes.split('\n').map(s => s.trim()).filter(Boolean)
+
+      await supabase.from('courses').update({
+        what_you_learn,
+        requirements: reqs,
+        includes: inc,
+      }).eq('id', id)
+
+      setSavingDetails(false)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    }
+
       const addAssignment = async () => {
       if (!newAssignment.title || !newAssignment.description) {
         alert('Please fill in title and description.')
@@ -173,6 +198,49 @@ export default function EditCourse() {
             <div style={{ fontSize: 13, color: '#888' }}>{course?.category} · GH₵ {course?.price} · {sections.length} sections · {totalLessons} lessons</div>
           </div>
           <Link href={`/course/${course?.slug}`} target="_blank" style={{ fontSize: 12, color: '#1D9E75', fontWeight: 500, textDecoration: 'none' }}>Preview →</Link>
+        </div>
+
+        {/* COURSE SALES PAGE DETAILS */}
+        <div style={{ background: 'white', border: '0.5px solid #e5e5e5', borderRadius: 12, padding: '1.25rem', marginBottom: '1rem' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>📝 Course sales page content</div>
+          <div style={{ fontSize: 12, color: '#888', marginBottom: 14 }}>One item per line. This appears on your public course page.</div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>What students will learn</label>
+            <textarea
+              value={whatYouLearn}
+              onChange={e => setWhatYouLearn(e.target.value)}
+              placeholder={'Build full-stack apps\nDesign databases\nDeploy to the cloud'}
+              rows={5}
+              style={{ width: '100%', padding: '10px 14px', border: '0.5px solid #ccc', borderRadius: 8, fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif', resize: 'vertical' }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Requirements</label>
+            <textarea
+              value={requirements}
+              onChange={e => setRequirements(e.target.value)}
+              placeholder={'No prior experience needed\nA computer with internet access'}
+              rows={3}
+              style={{ width: '100%', padding: '10px 14px', border: '0.5px solid #ccc', borderRadius: 8, fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif', resize: 'vertical' }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>This course includes</label>
+            <textarea
+              value={includes}
+              onChange={e => setIncludes(e.target.value)}
+              placeholder={'10 hours on-demand video\nDownloadable resources\nCertificate of completion'}
+              rows={4}
+              style={{ width: '100%', padding: '10px 14px', border: '0.5px solid #ccc', borderRadius: 8, fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif', resize: 'vertical' }}
+            />
+          </div>
+
+          <button onClick={saveDetails} disabled={savingDetails} style={{ padding: '9px 20px', background: savingDetails ? '#9FE1CB' : '#0F6E56', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: savingDetails ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+            {savingDetails ? 'Saving...' : 'Save sales page content'}
+          </button>
         </div>
 
         {/* SECTIONS */}
