@@ -70,7 +70,7 @@ const justEnrolled = searchParams?.get('enrolled') === 'true'
           ['🏠', 'Dashboard', '/dashboard'],
           ['📚', 'My Courses', '/dashboard/courses'],
           ['🏆', 'Certificates', '/dashboard/certificates'],
-          ['❤️', 'Wishlist', '/dashboard/wishlist'],
+          ['❤️', 'Wishlist', '/wishlist'],
           ['🔍', 'Browse All', '/'],
         ].map(([icon, label, href]) => (
           <Link key={label} href={href} style={{
