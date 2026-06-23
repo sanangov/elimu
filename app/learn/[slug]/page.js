@@ -6,8 +6,6 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ReviewForm from '@/app/components/ReviewForm'
 
-
-
 export default function LearnPage() {
   const router = useRouter()
   const { slug } = useParams()
@@ -48,7 +46,6 @@ export default function LearnPage() {
         .from('enrollments').select('*')
         .eq('user_id', session.user.id).eq('course_slug', slug).single()
       if (!enrollment) {
-        console.log('No enrollment found for slug:', slug)
         router.push(`/course/${slug}`)
         return
       }
@@ -60,13 +57,15 @@ export default function LearnPage() {
       setSections(sectionsData || [])
       const firstLesson = sectionsData?.[0]?.course_lessons?.[0]
       if (firstLesson) setActiveLesson(firstLesson)
-        const { data: materialsData } = await supabase
-          .from('course_materials')
-          .select('*')
-          .eq('course_id', courseData.id)
-          .order('created_at', { ascending: false })
-        setMaterials(materialsData || [])
-        const { data: assignmentData } = await supabase
+
+      const { data: materialsData } = await supabase
+        .from('course_materials')
+        .select('*')
+        .eq('course_id', courseData.id)
+        .order('created_at', { ascending: false })
+      setMaterials(materialsData || [])
+
+      const { data: assignmentData } = await supabase
         .from('assignments')
         .select('*')
         .eq('course_id', courseData.id)
@@ -98,21 +97,21 @@ export default function LearnPage() {
     if (!completed.includes(lessonId)) setCompleted([...completed, lessonId])
   }
 
-      const submitAssignment = async () => {
-      if (!answer.trim()) {
-        alert('Please write your answer before submitting.')
-        return
-      }
-      setSubmitting(true)
-      const { data } = await supabase.from('submissions').insert({
-        assignment_id: assignment.id,
-        student_id: user.id,
-        content: answer,
-      }).select().single()
-      setSubmission(data)
-      setSubmitSuccess(true)
-      setSubmitting(false)
+  const submitAssignment = async () => {
+    if (!answer.trim()) {
+      alert('Please write your answer before submitting.')
+      return
     }
+    setSubmitting(true)
+    const { data } = await supabase.from('submissions').insert({
+      assignment_id: assignment.id,
+      student_id: user.id,
+      content: answer,
+    }).select().single()
+    setSubmission(data)
+    setSubmitSuccess(true)
+    setSubmitting(false)
+  }
 
   const totalLessons = sections.reduce((acc, s) => acc + (s.course_lessons?.length || 0), 0)
   const progress = totalLessons > 0 ? Math.round((completed.length / totalLessons) * 100) : 0
@@ -186,9 +185,8 @@ export default function LearnPage() {
 
       {/* MOBILE LAYOUT */}
       {isMobile ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
 
-          {/* VIDEO — full width on mobile */}
           <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000', flexShrink: 0 }}>
             {activeLesson?.video_url ? (
               <iframe
@@ -206,7 +204,6 @@ export default function LearnPage() {
             )}
           </div>
 
-          {/* LESSON TITLE + BUTTONS */}
           <div style={{ background: '#1A1A1A', padding: '0.75rem 1rem', borderBottom: '0.5px solid #333', flexShrink: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{activeLesson?.title}</div>
             <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>{course?.title}</div>
@@ -226,13 +223,11 @@ export default function LearnPage() {
             </div>
           </div>
 
-          {/* CURRICULUM TOGGLE BUTTON */}
           <button onClick={() => setShowCurriculum(!showCurriculum)}
             style={{ padding: '12px 1rem', background: '#222', border: 'none', borderBottom: '0.5px solid #333', color: '#ccc', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left', fontFamily: 'DM Sans, sans-serif', flexShrink: 0 }}>
             {showCurriculum ? '▲ Hide curriculum' : '▼ Course curriculum'} · {sections.length} sections · {totalLessons} lessons
           </button>
 
-          {/* MATERIALS */}
           {materials.length > 0 && (
             <div style={{ padding: '1rem', background: '#1A1A1A', borderTop: '0.5px solid #333' }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: '#ccc', marginBottom: 10 }}>📚 Study Materials</div>
@@ -240,7 +235,6 @@ export default function LearnPage() {
             </div>
           )}
 
-          {/* ASSIGNMENT */}
           {assignment && progress === 100 && (
             <div style={{ padding: '1rem', background: '#1A1A1A', borderTop: '0.5px solid #333' }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: '#ccc', marginBottom: 4 }}>✏️ {assignment.title}</div>
@@ -274,14 +268,12 @@ export default function LearnPage() {
             </div>
           )}
 
-          {/* CURRICULUM LIST — toggleable */}
           {showCurriculum && (
             <div style={{ flex: 1, overflowY: 'auto', background: '#1A1A1A' }}>
               <CurriculumList />
             </div>
           )}
 
-          {/* REVIEW FORM */}
           {progress === 100 && (
             <div style={{ padding: '1rem', background: '#1A1A1A', borderTop: '0.5px solid #333' }}>
               <ReviewForm
@@ -298,20 +290,8 @@ export default function LearnPage() {
         /* DESKTOP LAYOUT */
         <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
-        
-          {/* SIDEBAR */}
-      <div style={{ width: 280, flexShrink: 0, background: '#1A1A1A', borderRight: '0.5px solid #333', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-        <CurriculumList />
-        {materials.length > 0 && (
-          <div style={{ padding: '1rem', borderTop: '0.5px solid #333', flexShrink: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#aaa', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.5px' }}>📚 Study Materials</div>
-            <MaterialsList materials={materials} canDelete={false} />
-          </div>
-        )}
-      </div>
-
-          {/* VIDEO AREA */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto', minWidth: 0 }}>
+          {/* LEFT — SCROLLABLE VIDEO + CONTENT COLUMN */}
+          <div style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
             {activeLesson ? (
               <>
                 <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000', flexShrink: 0 }}>
@@ -330,7 +310,7 @@ export default function LearnPage() {
                   )}
                 </div>
 
-                <div style={{ background: '#1A1A1A', borderTop: '0.5px solid #333', padding: '1rem 1.5rem', flexShrink: 0 }}>
+                <div style={{ background: '#1A1A1A', borderTop: '0.5px solid #333', padding: '1rem 1.5rem' }}>
                   <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{activeLesson.title}</div>
                   <div style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>{course?.title}</div>
                   <div style={{ display: 'flex', gap: 10 }}>
@@ -349,56 +329,64 @@ export default function LearnPage() {
                   </div>
                 </div>
 
-                {/* MATERIALS */}
-                
                 {progress === 100 && (
-                  <div style={{ padding: '1.5rem', background: '#1A1A1A', borderTop: '0.5px solid #333', overflowY: 'auto' }}>
+                  <div style={{ padding: '1.5rem', background: '#1A1A1A', borderTop: '0.5px solid #333' }}>
                     <ReviewForm
                       courseSlug={slug} courseId={course?.id} userId={user?.id}
                       firstName={user?.user_metadata?.first_name || 'Student'}
                       onReviewSubmitted={(r) => console.log('Review:', r)}
                     />
                   </div>
-
                 )}
-                {/* ASSIGNMENT */}
-              {assignment && progress === 100 && (
-                <div style={{ padding: '1.5rem', background: '#1A1A1A', borderTop: '0.5px solid #333', overflowY: 'auto' }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#ccc', marginBottom: 4 }}>✏️ {assignment.title}</div>
-                  {assignment.due_date && (
-                    <div style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>📅 Due: {new Date(assignment.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                  )}-
-                  {submission ? (
-                    <div style={{ background: '#0F6E56', borderRadius: 8, padding: '10px 14px' }}>
-                      <div style={{ fontSize: 13, color: 'white', fontWeight: 500 }}>✅ Assignment submitted!</div>
-                      {submission.score && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Score: {submission.score}/100</div>}
-                      {submission.feedback && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Feedback: {submission.feedback}</div>}
-                    </div>
-                  ) : (
-                    <>
-                      <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.7, marginBottom: 12, whiteSpace: 'pre-wrap' }}>{assignment.description}</div>
-                      <textarea
-                        value={answer}
-                        onChange={e => setAnswer(e.target.value)}
-                        placeholder="Write your answer here..."
-                        rows={6}
-                        style={{ width: '100%', padding: '10px 12px', border: '0.5px solid #444', borderRadius: 8, fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif', background: '#0F0F0F', color: 'white', resize: 'vertical', marginBottom: 12 }}
-                      />
-                      <button
-                        onClick={submitAssignment}
-                        disabled={submitting}
-                        style={{ width: '100%', padding: 12, background: submitting ? '#0F6E56' : '#1D9E75', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-                        {submitting ? 'Submitting...' : 'Submit assignment →'}
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
+
+                {assignment && progress === 100 && (
+                  <div style={{ padding: '1.5rem', background: '#1A1A1A', borderTop: '0.5px solid #333' }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#ccc', marginBottom: 4 }}>✏️ {assignment.title}</div>
+                    {assignment.due_date && (
+                      <div style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>📅 Due: {new Date(assignment.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                    )}
+                    {submission ? (
+                      <div style={{ background: '#0F6E56', borderRadius: 8, padding: '10px 14px' }}>
+                        <div style={{ fontSize: 13, color: 'white', fontWeight: 500 }}>✅ Assignment submitted!</div>
+                        {submission.score && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Score: {submission.score}/100</div>}
+                        {submission.feedback && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>Feedback: {submission.feedback}</div>}
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.7, marginBottom: 12, whiteSpace: 'pre-wrap' }}>{assignment.description}</div>
+                        <textarea
+                          value={answer}
+                          onChange={e => setAnswer(e.target.value)}
+                          placeholder="Write your answer here..."
+                          rows={6}
+                          style={{ width: '100%', padding: '10px 12px', border: '0.5px solid #444', borderRadius: 8, fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif', background: '#0F0F0F', color: 'white', resize: 'vertical', marginBottom: 12 }}
+                        />
+                        <button
+                          onClick={submitAssignment}
+                          disabled={submitting}
+                          style={{ width: '100%', padding: 12, background: submitting ? '#0F6E56' : '#1D9E75', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+                          {submitting ? 'Submitting...' : 'Submit assignment →'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
               </>
             ) : (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+              <div style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16, padding: '3rem' }}>
                 <div style={{ fontSize: 48 }}>📚</div>
                 <div style={{ fontSize: 16, color: '#888' }}>Select a lesson to start learning</div>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT — FIXED, INDEPENDENTLY SCROLLABLE SIDEBAR */}
+          <div style={{ width: 280, flexShrink: 0, background: '#1A1A1A', borderLeft: '0.5px solid #333', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <CurriculumList />
+            {materials.length > 0 && (
+              <div style={{ padding: '1rem', borderTop: '0.5px solid #333', flexShrink: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#aaa', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.5px' }}>📚 Study Materials</div>
+                <MaterialsList materials={materials} canDelete={false} />
               </div>
             )}
           </div>

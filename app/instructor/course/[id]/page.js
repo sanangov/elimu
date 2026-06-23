@@ -32,11 +32,11 @@ export default function EditCourse() {
 
       const { data: courseData } = await supabase
         .from('courses').select('*').eq('id', id).single()
-      setCourse(courseData)
-
-      setWhatYouLearn((courseData.what_you_learn || []).join('\n'))
-      setRequirements((courseData.requirements || []).join('\n'))
-      setIncludes((courseData.includes || []).join('\n'))
+      if (!courseData) { router.push('/instructor'); return }
+        setCourse(courseData)
+        setWhatYouLearn((courseData.what_you_learn || []).join('\n'))
+        setRequirements((courseData.requirements || []).join('\n'))
+        setIncludes((courseData.includes || []).join('\n'))
 
       const { data: sectionsData } = await supabase
         .from('course_sections').select('*, course_lessons(*)')
@@ -395,8 +395,11 @@ export default function EditCourse() {
                 </div>
                 <div style={{ fontSize: 13, color: '#555', lineHeight: 1.7, whiteSpace: 'pre-wrap', marginBottom: 8 }}>{assignment.description}</div>
                 {assignment.due_date && (
-                  <div style={{ fontSize: 12, color: '#888' }}>📅 Due: {new Date(assignment.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                  <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>📅 Due: {new Date(assignment.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
                 )}
+                <Link href={`/instructor/submissions/${assignment.id}`} style={{ display: 'inline-block', padding: '6px 14px', background: '#0F6E56', color: 'white', borderRadius: 6, fontSize: 12, fontWeight: 500, textDecoration: 'none' }}>
+                  📋 View submissions →
+                </Link>
               </div>
             ))
           )}
