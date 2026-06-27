@@ -73,22 +73,23 @@ export default function InstructorDashboard() {
           Elim<span style={{ color: '#1D9E75' }}>u</span>
         </div>
         {[
-          ['🏠', 'Dashboard', '/instructor'],
-          ['📚', 'My Courses', '/instructor'],
-          ['📊', 'Analytics', '/instructor'],
-          ['💰', 'Earnings', '/instructor'],
-          ['⭐', 'Reviews', '/instructor'],
-          ['👤', 'Profile', '/instructor'],
-        ].map(([icon, label, href]) => (
-          <Link key={label} href={href} style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '9px 1.25rem', fontSize: 13, fontWeight: 500,
-            color: label === 'Dashboard' ? '#0F6E56' : '#888',
-            background: label === 'Dashboard' ? '#E1F5EE' : 'transparent',
-            borderLeft: label === 'Dashboard' ? '2px solid #0F6E56' : '2px solid transparent',
-            textDecoration: 'none'
-          }}><span>{icon}</span>{label}</Link>
-        ))}
+            ['🏠', 'Dashboard', '/instructor'],
+            ['📚', 'My Courses', '/instructor'],
+            ['📝', 'Submissions', '/instructor/submissions'],
+            ['📊', 'Analytics', '/instructor'],
+            ['💰', 'Earnings', '/instructor'],
+            ['⭐', 'Reviews', '/instructor'],
+            ['👤', 'Profile', '/instructor'],
+          ].map(([icon, label, href]) => (
+            <Link key={label} href={href} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '9px 1.25rem', fontSize: 13, fontWeight: 500,
+              color: label === 'Dashboard' ? '#0F6E56' : '#888',
+              background: label === 'Dashboard' ? '#E1F5EE' : 'transparent',
+              borderLeft: label === 'Dashboard' ? '2px solid #0F6E56' : '2px solid transparent',
+              textDecoration: 'none'
+            }}><span>{icon}</span>{label}</Link>
+          ))}
         <div style={{ flex: 1 }} />
         <div style={{ padding: '1rem 1.25rem', borderTop: '0.5px solid #e5e5e5' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
